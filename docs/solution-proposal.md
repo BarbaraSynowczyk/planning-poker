@@ -106,10 +106,6 @@ React is proposed as the frontend framework, with Bootstrap used for UI styling 
 
 
 
----d
-
-
-
 \### ADR-004: Backend Technology
 
 
