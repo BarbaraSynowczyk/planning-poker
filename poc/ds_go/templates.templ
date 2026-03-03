@@ -1,0 +1,62 @@
+package main
+
+templ indexPage() {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>Planning Poker</title>
+			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js"></script>
+		</head>
+		<body>
+			<main>
+				<h1>Planning Poker</h1>
+				<form method="post" action="/join">
+					<label for="nick">Nickname:</label>
+					<input type="text" id="nick" name="nick" required/>
+					<button type="submit">Join</button>
+				</form>
+			</main>
+		</body>
+	</html>
+}
+
+templ gamePage(nick string, players []string, count int) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>Planning Poker - Game</title>
+			<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@main/bundles/datastar.js"></script>
+		</head>
+		<body>
+			<main data-init={ "@get('/game/updates?nick=" + nick + "')" }>
+				<h1>Game</h1>
+				<h2>Players</h2>
+				@playerList(players)
+				@counter(count)
+				<div id="game-content">
+					<button data-on:click="@post('/game/plus')">+1</button>
+					<button data-on:click="@post('/game/minus')">-1</button>
+					<button data-on:click="$counter+=1" data-bind="$counter"></button>
+				</div>
+			</main>
+		</body>
+	</html>
+}
+
+templ playerList(players []string) {
+	<ul id="player-list">
+		for _, p := range players {
+			<li>{ p }</li>
+		}
+	</ul>
+}
+
+templ counter(cnt int) {
+	<div id="counter">
+	    Current counter: <b>{ cnt }</b>
+	</div>
+}
