@@ -1,0 +1,48 @@
+@startuml
+
+title Dedicated "Planning Poker" solution overall architecture
+
+cloud "Atlassian Cloud Jira Service" as jira {
+}
+
+interface "Jira REST API" as jiraApi
+
+node "Organisation Running Environment" as runningEnv {
+    component "Planning Poker" as planningPoker
+}
+
+interface "Web" as web
+planningPoker -- web
+
+
+
+jiraApi <-- jira
+planningPoker --(jiraApi
+
+
+rectangle "Scrum Team" {
+    actor "Participant" as dev
+    actor "Participant" as dev2
+    actor "Moderator" as ba
+}
+
+dev ---( web: estimates
+dev2 --( web: estimates
+ba --( web: presents user stories and tasks
+
+dev - dev2: discusses estimates
+
+dev - ba: discusses requirements
+dev2 - ba: discusses requirements
+
+
+
+note bottom of runningEnv
+Internal environment of the organisation.
+end note
+
+note bottom of web
+Web page Graphical User Interface.
+end note
+
+@enduml
