@@ -12,25 +12,25 @@ import (
 )
 
 type Poker struct {
-	mu      sync.Mutex
+	mu      sync.RWMutex
 	counter int
 
-	players   []string
-	channels  map[string]chan string
-	connected map[string]bool
+	players         []string
+	updatesByNick   map[string]chan string
+	connectedByNick map[string]bool
 }
 
 func NewPoker() *Poker {
 	return &Poker{
-		channels:  make(map[string]chan string),
-		connected: make(map[string]bool),
+		updatesByNick:   make(map[string]chan string),
+		connectedByNick: make(map[string]bool),
 	}
 }
 
 func (p *Poker) Add(delta int) int {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	p.counter = p.counter + delta
+	p.counter += delta
 	return p.counter
 }
 
@@ -38,21 +38,21 @@ func (p *Poker) AddPlayer(nick string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	if _, exists := p.channels[nick]; exists {
+	if _, exists := p.updatesByNick[nick]; exists {
 		return
 	}
 
 	p.players = append(p.players, nick)
-	p.channels[nick] = make(chan string, 16)
+	p.updatesByNick[nick] = make(chan string, 16)
 }
 
 func (p *Poker) Connect(nick string) (<-chan string, bool) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	ch, ok := p.channels[nick]
+	ch, ok := p.updatesByNick[nick]
 	if ok {
-		p.connected[nick] = true
+		p.connectedByNick[nick] = true
 	}
 	return ch, ok
 }
@@ -60,49 +60,41 @@ func (p *Poker) Connect(nick string) (<-chan string, bool) {
 func (p *Poker) Disconnect(nick string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	delete(p.connected, nick)
+	delete(p.connectedByNick, nick)
 }
 
 func (p *Poker) BroadcastCounter() {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	fragment := counter(p.counter)
-	err := p.broadcast(context.Background(), fragment)
+	fragment, err := render(context.Background(), counter(p.snapshotCounter()))
 	if err != nil {
-		slog.Error("broadcasting counter", slog.String("err", err.Error()))
+		slog.Error("broadcast counter", slog.String("err", err.Error()))
+		return
+	}
+	if err := p.broadcastRaw(context.Background(), fragment); err != nil {
+		slog.Error("broadcast counter", slog.String("err", err.Error()))
 	}
 }
 
 func (p *Poker) BroadcastPlayerList() {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	err := p.broadcast(context.Background(), playerList(p.players))
+	fragment, err := render(context.Background(), playerList(p.snapshotPlayers()))
 	if err != nil {
+		slog.Error("broadcast player list", slog.String("err", err.Error()))
+		return
+	}
+	if err := p.broadcastRaw(context.Background(), fragment); err != nil {
 		slog.Error("broadcast player list", slog.String("err", err.Error()))
 	}
 }
-func (p *Poker) broadcast(ctx context.Context, cmp templ.Component) error {
-	s, err := render(ctx, cmp)
-	if err != nil {
-		return fmt.Errorf("trying to render before broadcast: %w", err)
-	}
-
-	return p.broadcastRaw(ctx, s)
-}
 
 func (p *Poker) broadcastRaw(ctx context.Context, fragment string) error {
-	for nick, ch := range p.channels {
-		if !p.connected[nick] {
-			continue
-		}
+	recipients := p.snapshotRecipients()
+
+	for _, r := range recipients {
 		select {
 		case <-ctx.Done():
-			return fmt.Errorf("broadcasting, %w", ctx.Err())
-		case ch <- fragment:
+			return fmt.Errorf("broadcast canceled: %w", ctx.Err())
+		case r.ch <- fragment:
 		default:
-			slog.Warn("channel full, dropping update", slog.String("nick", nick))
+			slog.Warn("channel full, dropping update", slog.String("nick", r.nick))
 		}
 	}
 
@@ -115,8 +107,9 @@ type PokerState struct {
 }
 
 func (p *Poker) State() PokerState {
-	p.mu.Lock()
-	defer p.mu.Unlock()
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+
 	cp := make([]string, len(p.players))
 	copy(cp, p.players)
 
@@ -126,26 +119,50 @@ func (p *Poker) State() PokerState {
 	}
 }
 
-func (p *Poker) renderPlayerList() string {
-	var buf bytes.Buffer
-	_ = playerList(p.players).Render(context.Background(), &buf)
-	return buf.String()
-}
-
 func render(ctx context.Context, c templ.Component) (string, error) {
 	var buf bytes.Buffer
-	err := c.Render(ctx, &buf)
-	if err != nil {
+	if err := c.Render(ctx, &buf); err != nil {
 		return "", fmt.Errorf("rendering component: %w", err)
 	}
-
 	return buf.String(), nil
 }
 
+func (p *Poker) snapshotCounter() int {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	return p.counter
+}
+
+func (p *Poker) snapshotPlayers() []string {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	players := make([]string, len(p.players))
+	copy(players, p.players)
+	return players
+}
+
+type recipient struct {
+	nick string
+	ch   chan string
+}
+
+func (p *Poker) snapshotRecipients() []recipient {
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	recipients := make([]recipient, 0, len(p.connectedByNick))
+	for nick := range p.connectedByNick {
+		ch, ok := p.updatesByNick[nick]
+		if ok {
+			recipients = append(recipients, recipient{nick: nick, ch: ch})
+		}
+	}
+	return recipients
+}
+
 func (p *Poker) HasPlayer(nick string) bool {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	_, ok := p.channels[nick]
+	p.mu.RLock()
+	defer p.mu.RUnlock()
+	_, ok := p.updatesByNick[nick]
 	return ok
 }
 

@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/starfederation/datastar-go/datastar"
@@ -34,7 +35,7 @@ func handleGameUpdates(p *Poker) http.Handler {
 				if !open {
 					return
 				}
-				if err := sse.PatchElementf(fragment); err != nil {
+				if err := sse.PatchElements(fragment); err != nil {
 					slog.Error("send update", slog.String("nick", nick), slog.String("err", err.Error()))
 					return
 				}
@@ -61,7 +62,7 @@ func handlePostJoin(p *Poker) http.Handler {
 		slog.Info("player joined", slog.String("nick", nick))
 		p.BroadcastPlayerList()
 
-		http.Redirect(w, r, "/game?nick="+nick, http.StatusSeeOther)
+		http.Redirect(w, r, "/game?nick="+url.QueryEscape(nick), http.StatusSeeOther)
 	})
 }
 

@@ -2,8 +2,8 @@ class Poker {
   constructor() {
     this.counter = 0;
     this.players = [];
-    this.channels = new Map();
-    this.connected = new Map();
+    this.listenersByNick = new Map();
+    this.connectedNicks = new Set();
   }
 
   add(delta) {
@@ -12,27 +12,27 @@ class Poker {
   }
 
   addPlayer(nick) {
-    if (this.channels.has(nick)) {
+    if (this.listenersByNick.has(nick)) {
       return;
     }
     this.players.push(nick);
-    this.channels.set(nick, []);
+    this.listenersByNick.set(nick, new Set());
   }
 
   hasPlayer(nick) {
-    return this.channels.has(nick);
+    return this.listenersByNick.has(nick);
   }
 
   connect(nick) {
-    if (!this.channels.has(nick)) {
+    if (!this.listenersByNick.has(nick)) {
       return null;
     }
-    this.connected.set(nick, true);
+    this.connectedNicks.add(nick);
     return nick;
   }
 
   disconnect(nick) {
-    this.connected.delete(nick);
+    this.connectedNicks.delete(nick);
   }
 
   state() {
@@ -43,43 +43,39 @@ class Poker {
   }
 
   broadcastCounter() {
-    const fragment = renderCounter(this.counter);
-    this._broadcast(fragment);
+    this._broadcast(renderCounter(this.counter));
   }
 
   broadcastPlayerList() {
-    const fragment = renderPlayerList(this.players);
-    this._broadcast(fragment);
+    this._broadcast(renderPlayerList(this.players));
   }
 
   _broadcast(fragment) {
-    for (const [nick] of this.channels) {
-      if (!this.connected.get(nick)) {
+    for (const nick of this.connectedNicks) {
+      const listeners = this.listenersByNick.get(nick);
+      if (!listeners || listeners.size === 0) {
         continue;
       }
-      const listeners = this.channels.get(nick);
       for (const listener of listeners) {
-        console.log('Broadcasting to a listener for ' + nick)
         listener(fragment);
       }
     }
   }
 
   addListener(nick, fn) {
-    const listeners = this.channels.get(nick);
-    if (listeners) {
-      listeners.push(fn);
+    const listeners = this.listenersByNick.get(nick);
+    if (!listeners) {
+      return;
     }
+    listeners.add(fn);
   }
 
   removeListener(nick, fn) {
-    const listeners = this.channels.get(nick);
-    if (listeners) {
-      const idx = listeners.indexOf(fn);
-      if (idx !== -1) {
-        listeners.splice(idx, 1);
-      }
+    const listeners = this.listenersByNick.get(nick);
+    if (!listeners) {
+      return;
     }
+    listeners.delete(fn);
   }
 }
 
@@ -102,4 +98,3 @@ function renderCounter(cnt) {
 }
 
 export { Poker, renderPlayerList, renderCounter, escapeHtml };
-

@@ -1,14 +1,19 @@
 {
-  "name": "planning-poker",
+  "name": "planning-poker-ds-js",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "main": "main.mjs",
   "scripts": {
-    "start": "node main.mjs"
+    "start": "node main.mjs",
+    "dev": "node --watch main.mjs",
+    "smoke": "node --check main.mjs && node --check game.mjs && node --check templates.mjs"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
   },
   "dependencies": {
     "@starfederation/datastar-sdk": "1.0.0-RC.3"
   }
 }
-

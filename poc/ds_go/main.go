@@ -49,5 +49,6 @@ func handleCounter(p *Poker, delta int) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		p.Add(delta)
 		p.BroadcastCounter()
+		w.WriteHeader(http.StatusNoContent)
 	})
 }

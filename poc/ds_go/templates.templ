@@ -40,7 +40,6 @@ templ gamePage(nick string, players []string, count int) {
 				<div id="game-content">
 					<button data-on:click="@post('/game/plus')">+1</button>
 					<button data-on:click="@post('/game/minus')">-1</button>
-					<button data-on:click="$counter+=1" data-bind="$counter"></button>
 				</div>
 			</main>
 		</body>
