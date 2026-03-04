@@ -2,9 +2,11 @@
 
 
 
-Proposed UI layout.
+Proposed UI layout for Planning Poker.
 
 
 
-!\[UI Layout](mainPage.png)
+!\[UI Layout](planningPoker.png)
+
+
 
