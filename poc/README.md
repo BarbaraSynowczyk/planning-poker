@@ -1,5 +1,11 @@
 # Planning Poker POC - shared behavior
 
+## Docs
+
+[DataStar](https://data-star.dev/)
+[DeepWiki](https://deepwiki.com/starfederation/datastar)
+[Atlassian API token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
+
 This document covers behavior and verification common to both implementations:
 
 - `poc/ds_js` (Node.js)
