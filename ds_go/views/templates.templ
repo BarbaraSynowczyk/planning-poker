@@ -1,0 +1,80 @@
+package views
+
+templ IndexPage() {
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Planning Poker</title>
+    </head>
+
+    <body>
+
+        <h1>Planning Poker</h1>
+
+        <form method="post" action="/join">
+            <label for="userName">Nickname:</label>
+            <input type="text" id="userName" name="userName" required/>
+            <button type="submit">Join</button>
+        </form>
+
+    </body>
+</html>
+}
+
+templ GamePage(userName string, players []string, counter int) {
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Planning Poker - Game</title>
+    </head>
+
+    <body>
+
+        <main>
+
+            <h1>Welcome, {userName}</h1>
+
+            <div id="game-state">
+
+                <ul>
+                for _, p := range players {
+                <li>{p}</li>
+                }
+                </ul>
+
+                <button onclick="plus()">+1</button>
+                <button onclick="minus()">-1</button>
+
+                <div id="counter">
+                    Counter: {counter}
+                </div>
+
+            </div>
+
+        </main>
+
+    <script>
+
+        function plus(){
+        fetch("/game/plus",{method:"POST"})
+        }
+
+        function minus(){
+        fetch("/game/minus",{method:"POST"})
+        }
+
+        const evtSource = new EventSource("/game/updates");
+
+        evtSource.onmessage = function(event){
+        document.querySelector("#game-state").outerHTML = event.data;
+        }
+
+    </script>
+
+    </body>
+</html>
+}
