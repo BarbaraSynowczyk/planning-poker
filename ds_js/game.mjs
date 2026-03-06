@@ -1,5 +1,6 @@
 export class Game {
 
+    //realtime fix
     constructor(){
         this.players = []
         this.counter = 0

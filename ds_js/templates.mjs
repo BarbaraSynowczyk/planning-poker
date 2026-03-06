@@ -20,7 +20,7 @@ export function indexPage(){
 </html>
 `
 }
-
+//realtime fix
 
 
 export function gamePage(userName, game){

@@ -4,6 +4,10 @@ import {indexPage, gamePage} from "./templates.mjs"
 
 const game = new Game()
 
+
+
+//realtime fix
+
 function debug(...args){
     console.log(new Date().toISOString(), ...args)
 }
