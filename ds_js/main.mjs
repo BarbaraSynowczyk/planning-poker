@@ -4,10 +4,6 @@ import {indexPage, gamePage} from "./templates.mjs"
 
 const game = new Game()
 
-
-
-//realtime fix
-
 function debug(...args){
     console.log(new Date().toISOString(), ...args)
 }
@@ -47,7 +43,6 @@ const server = http.createServer((req,res)=>{
             res.writeHead(303,{Location:`/game?userName=${name}`})
             res.end()
 
-            game.broadcast()
         })
 
         return
@@ -69,6 +64,7 @@ const server = http.createServer((req,res)=>{
         res.end(gamePage(name,game))
 
         return
+
     }
 
 

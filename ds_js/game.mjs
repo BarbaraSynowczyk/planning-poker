@@ -1,6 +1,5 @@
 export class Game {
 
-    //realtime fix
     constructor(){
         this.players = []
         this.counter = 0
@@ -71,15 +70,18 @@ ${payload}
 
         return `<div id="game-state" data-merge="outerHTML">
 
-        <ul>
-        ${players}
-        </ul>
-        
-        <p>
-        Counter: ${this.counter}
-        </p>
-        
-        </div>`
+<ul>
+${players}
+</ul>
+
+<p>
+Counter: ${this.counter}
+</p>
+
+<button data-on:click="@post('/game/plus')">+1</button>
+<button data-on:click="@post('/game/minus')">-1</button>
+
+</div>`
     }
 
 }
