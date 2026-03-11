@@ -1,22 +1,59 @@
 import express from "express"
-import {mainPage} from "./views/components/templates.mjs";
-import {gamePage} from "./views/components/templates.mjs";
-import { Game } from "./views/pages/game.mjs"
+import {engine} from 'express-handlebars';
+import {gamePage, mainPage} from "./views/components/templates.mjs";
+import {ServerSentEventGenerator} from "@starfederation/datastar-sdk/node";
+
+import {Game} from "./views/pages/game.mjs"
 
 const game = new Game()
 const main = express()
 
 main.use(express.static("public"))
-main.use(express.urlencoded({ extended: true }))
+main.use(express.urlencoded({extended: true}))
 
-main.get("/", (req, res)=>{
+const hbs = engine({
+    extname: 'hbs',
+    partialsDir: './src/views/partials/'
+});
+main.engine('hbs', hbs);
+main.set('view engine', 'hbs');
+main.set('views', './src/views');
+main.set('view engine', 'hbs');
 
+main.get("/", (req, res) => {
     res.send(mainPage())
+})
+
+main.get("/test", (req, res) => {
+    res.render('test')
+})
+
+main.get("/datastar", (req, res) => {
+    res.render('datastar')
+})
+
+main.get("/datastar/updates", async (req, res) => {
+    const sse = new ServerSentEventGenerator(req, res);
+    let counter = 1
+    const interval = setInterval(() => {
+        res.render('partials/counter', {layout: null, val: counter},
+            (err, tableHtml) => {
+                if (err) return res.error(err);
+                sse.patchElements(tableHtml);
+            }
+        );
+        counter++
+    }, 500)
+
+    req.on("close", () => {
+        clearInterval(interval)
+        sse.close();
+    })
 })
 
 main.post("/login", async (req, res) => {
 
-    const { email, token, domain } = req.body
+    const {email, token, domain} = req.body
 
     const auth = Buffer
         .from(`${email}:${token}`)
@@ -36,11 +73,11 @@ main.post("/login", async (req, res) => {
 
         if (!response.ok) {
 
-            if(response.status === 401){
+            if (response.status === 401) {
                 return res.send(mainPage("Invalid email or API token"))
             }
 
-            if(response.status === 404){
+            if (response.status === 404) {
                 return res.send(mainPage("Domain not found"))
             }
 
@@ -79,10 +116,10 @@ main.listen(8080, () => {
 
 main.get("/game/updates", (req, res) => {
 
-    res.writeHead(200,{
-        "Content-Type":"text/event-stream",
-        "Cache-Control":"no-cache",
-        "Connection":"keep-alive"
+    res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
     })
 
 
@@ -102,11 +139,11 @@ ${payload}
 
 `)
 
-    const interval = setInterval(()=>{
+    const interval = setInterval(() => {
         res.write(": heartbeat\n\n")
-    },20000)
+    }, 20000)
 
-    req.on("close",()=>{
+    req.on("close", () => {
         clearInterval(interval)
         game.removeClient(res)
     })
@@ -114,7 +151,7 @@ ${payload}
 
 })
 
-main.post("/game/vote", (req,res)=>{
+main.post("/game/vote", (req, res) => {
 
     const player = req.body.player
     const value = req.body.value
