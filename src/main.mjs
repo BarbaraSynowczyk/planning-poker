@@ -1,5 +1,5 @@
 import http from "node:http";
-import { mainPage, gamePage } from "./views/templates.mjs";
+import { mainPage, gamePage, moderatorPage } from "./views/templates.mjs";
 import { Game } from "./game/game.mjs";
 import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 
@@ -7,7 +7,25 @@ import fs from "node:fs";
 import path from "node:path";
 
 const game = new Game();
+const sessions = {};
 
+//############################## MODERATOR PAGE ###################################
+
+async function isModerator(projectKey, accountId, domain, auth) {
+  const r = await fetch(`https://${domain}/rest/api/3/project/${projectKey}`, {
+    headers: {
+      Authorization: `Basic ${auth}`,
+      Accept: "application/json",
+    },
+  });
+
+  const data = await r.json();
+  console.log(data.lead);
+  console.log(accountId);
+
+  return data.lead?.accountId === accountId;
+}
+//###############################################################################
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://localhost");
 
@@ -92,9 +110,133 @@ const server = http.createServer(async (req, res) => {
 
         const userName = data.displayName;
         const avatar = data.avatarUrls["24x24"];
+        const accountId = data.accountId;
+        const filters = await getFilters();
+
+        // ############################# GETTING TASKS, GEN BY AI ##############################
+
+        const projectResponse = await fetch(
+          `https://${domain}/rest/api/3/project/search`,
+          {
+            headers: {
+              Authorization: `Basic ${auth}`,
+              Accept: "application/json",
+            },
+          },
+        );
+
+        const projectData = await projectResponse.json();
+        const projects = projectData.values.map((p) => ({
+          key: p.key,
+          name: p.name,
+        }));
+        const allTasks = [];
+
+        sessions[userName] = {
+          userName,
+          avatar,
+          accountId,
+          domain,
+          auth,
+          filters,
+          projects,
+          tasks: allTasks,
+        };
+
+        for (const p of projects) {
+          try {
+            const issues = await getIssues(p.key);
+
+            const tasks = issues.map((i) => ({
+              project: p.name,
+              key: i.key,
+              name: i.fields.summary,
+              status: i.fields.status?.name,
+              storyPoints: i.fields.customfield_10016,
+              assignee: i.fields.assignee?.displayName,
+              reporter: i.fields.reporter?.displayName,
+              labels: i.fields.labels,
+              description: i.fields.description,
+              created: i.fields.created,
+              updated: i.fields.updated,
+              comments:
+                i.fields.comment?.comments.map((c) => ({
+                  author: c.author.displayName,
+                  text: c.body,
+                })) ?? [],
+            }));
+
+            allTasks.push(...tasks);
+
+            // console.log(`Tasks for ${p.key}:`, tasks);
+          } catch (err) {
+            console.error(`Error fetching issues for ${p.key}:`, err);
+          }
+        }
+
+        async function getIssues(projectKey) {
+          const jql = encodeURIComponent(`project=${projectKey}`);
+          //paginacja
+
+          const r = await fetch(
+            `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016`,
+            {
+              headers: {
+                Authorization: `Basic ${auth}`,
+                Accept: "application/json",
+              },
+            },
+          );
+
+          const data = await r.json();
+          return data.issues ?? [];
+        }
+
+        // ########################################################################
+
+        // ############################## GETTING FILTERS ##############################
+
+        async function getFilters() {
+          const r = await fetch(`https://${domain}/rest/api/3/filter/search`, {
+            headers: {
+              Authorization: `Basic ${auth}`,
+              Accept: "application/json",
+            },
+          });
+
+          const data = await r.json();
+          const filters = data.values ?? [];
+
+          const fullFilters = [];
+
+          for (const f of filters) {
+            const fr = await fetch(
+              `https://${domain}/rest/api/3/filter/${f.id}`,
+              {
+                headers: {
+                  Authorization: `Basic ${auth}`,
+                  Accept: "application/json",
+                },
+              },
+            );
+
+            const fd = await fr.json();
+
+            fullFilters.push({
+              id: fd.id,
+              name: fd.name,
+              jql: fd.jql,
+              owner: fd.owner?.displayName,
+            });
+          }
+
+          return fullFilters;
+        }
+
+        //################################################################################
 
         game.addPlayer(userName);
-        game.addPlayer(userName);
+        // game.addPlayer(userName);
         game.avatars[userName] = avatar;
 
         res.writeHead(302, {
@@ -116,14 +258,38 @@ const server = http.createServer(async (req, res) => {
   // GAME PAGE
   if (url.pathname === "/game" && req.method === "GET") {
     const userName = url.searchParams.get("userName");
-    const avatar = game.avatars[userName];
+    // const avatar = game.avatars[userName];
+    const session = sessions[userName];
+
+    if (!session) {
+      res.writeHead(302, { Location: "/" });
+      res.end();
+      return;
+    }
+
+    const { avatar, accountId, domain, auth, filters, projects, tasks } =
+      session;
+
+    const projectKey = projects[0].key;
+
+    if (!projectKey) {
+      res.end("No Jira projects found");
+      return;
+    }
+
+    const moderator = await isModerator(projectKey, accountId, domain, auth);
 
     game.addPlayer(userName);
 
     const gameState = game.renderGameState();
 
     res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(gamePage(userName, avatar, gameState));
+
+    if (moderator) {
+      res.end(moderatorPage(userName, avatar, filters, tasks));
+    } else {
+      res.end(gamePage(userName, avatar, gameState));
+    }
 
     return;
   }
@@ -144,22 +310,23 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (url.pathname === "/game/updates") {
-    ServerSentEventGenerator.stream(req, res, (stream) => {
-      game.addClient(stream);
+    ServerSentEventGenerator.stream(
+      req,
+      res,
+      (stream) => {
+        game.addClient(stream);
 
-      stream.patchElements(game.renderGameState());
+        stream.patchElements(game.renderGameState());
 
-
-
-
-      req.on("close", () => {
-        game.removeClient(stream);
-        stream.close()
-      });
-
-    },{
-      keepalive:true,
-    });
+        req.on("close", () => {
+          game.removeClient(stream);
+          stream.close();
+        });
+      },
+      {
+        keepalive: true,
+      },
+    );
 
     return;
   }

@@ -1,6 +1,6 @@
 # Planning Poker
 
-----
+---
 
 Web application designed to support Scrum teams in task estimation using the Planning Poker technique.
 
@@ -8,7 +8,6 @@ Web application designed to support Scrum teams in task estimation using the Pla
 
 - [Requirements](docs/project-requirements/project-requirements.doc.md)
 - [UI/UX](docs/ui-ux/ui-ux.md)
-
 
 ## Goal
 
