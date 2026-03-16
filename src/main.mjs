@@ -1,125 +1,337 @@
-import express from "express"
-import {mainPage} from "./views/components/templates.mjs";
-import {gamePage} from "./views/components/templates.mjs";
-import { Game } from "./views/pages/game.mjs"
+import http from "node:http";
+import { mainPage, gamePage, moderatorPage } from "./views/templates.mjs";
+import { Game } from "./game/game.mjs";
+import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 
-const game = new Game()
-const main = express()
+import fs from "node:fs";
+import path from "node:path";
 
-main.use(express.static("public"))
-main.use(express.urlencoded({ extended: true }))
+const game = new Game();
+const sessions = {};
 
-main.get("/", (req, res)=>{
+//############################## MODERATOR PAGE ###################################
 
-    res.send(mainPage())
-})
+async function isModerator(projectKey, accountId, domain, auth) {
+  const r = await fetch(`https://${domain}/rest/api/3/project/${projectKey}`, {
+    headers: {
+      Authorization: `Basic ${auth}`,
+      Accept: "application/json",
+    },
+  });
 
-main.post("/login", async (req, res) => {
+  const data = await r.json();
+  console.log(data.lead);
+  console.log(accountId);
 
-    const { email, token, domain } = req.body
+  return data.lead?.accountId === accountId;
+}
+//###############################################################################
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, "http://localhost");
 
-    const auth = Buffer
-        .from(`${email}:${token}`)
-        .toString("base64")
+  if (url.pathname.startsWith("/css/") || url.pathname.startsWith("/images/")) {
+    const filePath = path.join("public", url.pathname);
 
-    try {
-        const response = await fetch(
-            `https://${domain}/rest/api/3/myself`,
-            {
-                headers: {
-                    Authorization: `Basic ${auth}`,
-                    Accept: "application/json",
-                    // "User-Agent": "planning-poker-app"
-                }
-            }
-        )
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        res.writeHead(404);
+        res.end("Not found");
+        return;
+      }
+
+      const ext = path.extname(filePath);
+
+      const types = {
+        ".css": "text/css",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".svg": "image/svg+xml",
+      };
+
+      res.writeHead(200, {
+        "Content-Type": types[ext] || "application/octet-stream",
+      });
+
+      res.end(data);
+    });
+
+    return;
+  }
+
+  // LOGIN PAGE
+  if (url.pathname === "/" && req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(mainPage());
+    return;
+  }
+
+  // LOGIN REQUEST
+  if (url.pathname === "/login" && req.method === "POST") {
+    let body = "";
+
+    req.on("data", (chunk) => (body += chunk));
+
+    req.on("end", async () => {
+      const params = new URLSearchParams(body);
+
+      const email = params.get("email");
+      const token = params.get("token");
+      const domain = params.get("domain");
+
+      const auth = Buffer.from(`${email}:${token}`).toString("base64");
+
+      try {
+        const response = await fetch(`https://${domain}/rest/api/3/myself`, {
+          headers: {
+            Authorization: `Basic ${auth}`,
+            Accept: "application/json",
+          },
+        });
 
         if (!response.ok) {
+          if (response.status === 401) {
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(mainPage("Invalid email or API token"));
+            return;
+          }
 
-            if(response.status === 401){
-                return res.send(mainPage("Invalid email or API token"))
-            }
+          if (response.status === 404) {
+            res.writeHead(200, { "Content-Type": "text/html" });
+            res.end(mainPage("Domain not found"));
+            return;
+          }
 
-            if(response.status === 404){
-                return res.send(mainPage("Domain not found"))
-            }
-
-            return res.send(mainPage("Cannot connect to Jira. Check your domain"))
+          res.writeHead(200, { "Content-Type": "text/html" });
+          res.end(mainPage("Cannot connect to Jira. Check your domain"));
+          return;
         }
 
-        const data = await response.json()
+        const data = await response.json();
 
-        const userName = data.displayName
-        const avatar = data.avatarUrls["24x24"]
+        const userName = data.displayName;
+        const avatar = data.avatarUrls["24x24"];
+        const accountId = data.accountId;
+        const filters = await getFilters();
 
-        game.addPlayer(userName)
+        // ############################# GETTING TASKS, GEN BY AI ##############################
 
-        res.redirect(`/game?userName=${encodeURIComponent(userName)}&avatar=${encodeURIComponent(avatar)}`)
+        const projectResponse = await fetch(
+          `https://${domain}/rest/api/3/project/search`,
+          {
+            headers: {
+              Authorization: `Basic ${auth}`,
+              Accept: "application/json",
+            },
+          },
+        );
 
+        const projectData = await projectResponse.json();
+        const projects = projectData.values.map((p) => ({
+          key: p.key,
+          name: p.name,
+        }));
+        const allTasks = [];
 
-    } catch (error) {
-        console.error(error)
-        return res.send(mainPage("Cannot connect to Jira. Check your domain."))
+        sessions[userName] = {
+          userName,
+          avatar,
+          accountId,
+          domain,
+          auth,
+          filters,
+          projects,
+          tasks: allTasks,
+        };
+
+        for (const p of projects) {
+          try {
+            const issues = await getIssues(p.key);
+
+            const tasks = issues.map((i) => ({
+              project: p.name,
+              key: i.key,
+              name: i.fields.summary,
+              status: i.fields.status?.name,
+              storyPoints: i.fields.customfield_10016,
+              assignee: i.fields.assignee?.displayName,
+              reporter: i.fields.reporter?.displayName,
+              labels: i.fields.labels,
+              description: i.fields.description,
+              created: i.fields.created,
+              updated: i.fields.updated,
+              comments:
+                i.fields.comment?.comments.map((c) => ({
+                  author: c.author.displayName,
+                  text: c.body,
+                })) ?? [],
+            }));
+
+            allTasks.push(...tasks);
+
+            // console.log(`Tasks for ${p.key}:`, tasks);
+          } catch (err) {
+            console.error(`Error fetching issues for ${p.key}:`, err);
+          }
+        }
+
+        async function getIssues(projectKey) {
+          const jql = encodeURIComponent(`project=${projectKey}`);
+          //paginacja
+
+          const r = await fetch(
+            `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016`,
+            {
+              headers: {
+                Authorization: `Basic ${auth}`,
+                Accept: "application/json",
+              },
+            },
+          );
+
+          const data = await r.json();
+          return data.issues ?? [];
+        }
+
+        // ########################################################################
+
+        // ############################## GETTING FILTERS ##############################
+
+        async function getFilters() {
+          const r = await fetch(`https://${domain}/rest/api/3/filter/search`, {
+            headers: {
+              Authorization: `Basic ${auth}`,
+              Accept: "application/json",
+            },
+          });
+
+          const data = await r.json();
+          const filters = data.values ?? [];
+
+          const fullFilters = [];
+
+          for (const f of filters) {
+            const fr = await fetch(
+              `https://${domain}/rest/api/3/filter/${f.id}`,
+              {
+                headers: {
+                  Authorization: `Basic ${auth}`,
+                  Accept: "application/json",
+                },
+              },
+            );
+
+            const fd = await fr.json();
+
+            fullFilters.push({
+              id: fd.id,
+              name: fd.name,
+              jql: fd.jql,
+              owner: fd.owner?.displayName,
+            });
+          }
+
+          return fullFilters;
+        }
+
+        //################################################################################
+
+        game.addPlayer(userName);
+        // game.addPlayer(userName);
+        game.avatars[userName] = avatar;
+
+        res.writeHead(302, {
+          Location: `/game?userName=${encodeURIComponent(userName)}`,
+        });
+
+        res.end();
+      } catch (error) {
+        console.error(error);
+
+        res.writeHead(500, { "Content-Type": "text/html" });
+        res.end(mainPage("Cannot connect to Jira. Check your domain."));
+      }
+    });
+
+    return;
+  }
+
+  // GAME PAGE
+  if (url.pathname === "/game" && req.method === "GET") {
+    const userName = url.searchParams.get("userName");
+    // const avatar = game.avatars[userName];
+    const session = sessions[userName];
+
+    if (!session) {
+      res.writeHead(302, { Location: "/" });
+      res.end();
+      return;
     }
 
+    const { avatar, accountId, domain, auth, filters, projects, tasks } =
+      session;
 
-})
+    const projectKey = projects[0].key;
 
-main.get("/game", (req, res) => {
+    if (!projectKey) {
+      res.end("No Jira projects found");
+      return;
+    }
 
-    const userName = req.query.userName
-    const avatar = req.query.avatar
+    const moderator = await isModerator(projectKey, accountId, domain, auth);
 
-    res.send(gamePage(userName, avatar, game))
-})
+    game.addPlayer(userName);
 
-main.listen(8080, () => {
-    console.log("Server działa na http://localhost:8080")
-})
+    const gameState = game.renderGameState();
 
-main.get("/game/updates", (req, res) => {
+    res.writeHead(200, { "Content-Type": "text/html" });
 
-    res.writeHead(200,{
-        "Content-Type":"text/event-stream",
-        "Cache-Control":"no-cache",
-        "Connection":"keep-alive"
-    })
+    if (moderator) {
+      res.end(moderatorPage(userName, avatar, filters, tasks));
+    } else {
+      res.end(gamePage(userName, avatar, gameState));
+    }
 
+    return;
+  }
 
-    res.flushHeaders?.()
-    game.addClient(res)
+  // VOTE
+  if (url.pathname === "/game/vote" && req.method === "POST") {
+    const player = url.searchParams.get("player");
+    const value = url.searchParams.get("value");
 
+    game.vote(player, value);
 
-    const html = game.renderGameState()
+    const html = game.renderGameState();
 
-    const payload = html
-        .split("\n")
-        .map(line => `data: ${line}`)
-        .join("\n")
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end(html);
 
-    res.write(`event: patch
-${payload}
+    return;
+  }
 
-`)
+  if (url.pathname === "/game/updates") {
+    ServerSentEventGenerator.stream(
+      req,
+      res,
+      (stream) => {
+        game.addClient(stream);
 
-    const interval = setInterval(()=>{
-        res.write(": heartbeat\n\n")
-    },20000)
+        stream.patchElements(game.renderGameState());
 
-    req.on("close",()=>{
-        clearInterval(interval)
-        game.removeClient(res)
-    })
+        req.on("close", () => {
+          game.removeClient(stream);
+          stream.close();
+        });
+      },
+      {
+        keepalive: true,
+      },
+    );
 
+    return;
+  }
+});
 
-})
-
-main.post("/game/vote", (req,res)=>{
-
-    const player = req.body.player
-    const value = req.body.value
-
-    game.vote(player, value)
-
-    res.sendStatus(204)
-})
+server.listen(8080, () => {
+  console.log("Server running at http://localhost:8080");
+});

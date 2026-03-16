@@ -24,8 +24,8 @@ is not fully satisfying the needs of the Organisation:
 
 - poor support of Jira filters hinders estimation sessions scope
 - UX requires simplification and better support of native Jira CSS
-    - well formated task description with all detail, like attached images, in task view requires fixes
-    - some features are redundant making view chaotic
+  - well formated task description with all detail, like attached images, in task view requires fixes
+  - some features are redundant making view chaotic
 
 ### Refinement session view
 
@@ -34,14 +34,14 @@ is not fully satisfying the needs of the Organisation:
 ![wireframe.drawio.svg](wireframe.drawio.svg)
 
 - [ ] Backlog scope should be defined by selection of one of stored
-  filters - [Jira, manage filters](https://support.atlassian.com/jira-software-cloud/docs/manage-filters/) - on initial
-  stage of the project, selection from dropdown or text field to insert filter id
+      filters - [Jira, manage filters](https://support.atlassian.com/jira-software-cloud/docs/manage-filters/) - on initial
+      stage of the project, selection from dropdown or text field to insert filter id
 - [ ] Tasks returned by the filter should be organized in swimlanes
-    - view similar to [scrum board view](https://www.atlassian.com/software/jira/features/scrum-boards)
-    - estimated - if in contains story points value
-    - to estimate - if story points value is missing
-    - to analyze - if required more detailed specification, basing on
-      specified [label](https://confluence.atlassian.com/automation112/organize-your-rules-with-labels-1688902067.html)
+  - view similar to [scrum board view](https://www.atlassian.com/software/jira/features/scrum-boards)
+  - estimated - if in contains story points value
+  - to estimate - if story points value is missing
+  - to analyze - if required more detailed specification, basing on
+    specified [label](https://confluence.atlassian.com/automation112/organize-your-rules-with-labels-1688902067.html)
 - [ ] Horizontally, tasks should be grouped by parent [features](https://www.atlassian.com/pl/software/jira/features)
 
 #### Access to view
@@ -49,24 +49,24 @@ is not fully satisfying the needs of the Organisation:
 - [ ] to Join the planning poker session, user needs to know sessions URL
 - [ ] few users shares the session - view need to be refreshed after any user action
 - [ ] to access the view user needs to
-  provide [Jira personal access token](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
-    - [ ] each window keeps individual context of particular user
+      provide [Jira personal access token](https://confluence.atlassian.com/enterprise/using-personal-access-tokens-1026032365.html)
+  - [ ] each window keeps individual context of particular user
 - [ ] moderator role is distinguished
-    - [ ] one session is conducted by only one moderator
-    - [ ] can create session and selects the scope by providing jira filter id
-    - [ ] as the only user of the session can
-        - [ ] select active task,
-        - [ ] move tasks between swimlanes,
-        - [ ] edit description of the task in preview,
-        - [ ] add comments to task in preview
-    - [ ] as the only user can
-        - [ ] start and finish estimation round,
-        - [ ] accept and set on the task result estimation value
-    - [ ] participant role is distinguished
-        - [ ] participant view is automatically refreshed when
-            - [ ] tasks are moved between swimlanes
-            - [ ] estimation round is started/finished
-        - [ ] participant can only select his own estimation value during estimation round
+  - [ ] one session is conducted by only one moderator
+  - [ ] can create session and selects the scope by providing jira filter id
+  - [ ] as the only user of the session can
+    - [ ] select active task,
+    - [ ] move tasks between swimlanes,
+    - [ ] edit description of the task in preview,
+    - [ ] add comments to task in preview
+  - [ ] as the only user can
+    - [ ] start and finish estimation round,
+    - [ ] accept and set on the task result estimation value
+  - [ ] participant role is distinguished
+    - [ ] participant view is automatically refreshed when
+      - [ ] tasks are moved between swimlanes
+      - [ ] estimation round is started/finished
+    - [ ] participant can only select his own estimation value during estimation round
 
 ## Technical requirements
 
@@ -78,7 +78,7 @@ Prototyping of particular features are supported by AI agents. Generated code ne
 
 - [ ] Code is covered by unit tests with coverage above 80%
 - [ ] IDE static code analysis is used to keep code quality on high level - e.g. Lint for JavaScript
-    - [ ] Precommit hook is used to run static code analysis before each commit
+  - [ ] Precommit hook is used to run static code analysis before each commit
 
 ### Code base management
 
