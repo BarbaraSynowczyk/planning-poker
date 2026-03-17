@@ -1,7 +1,7 @@
 export function gamePage(userName, avatar, gameState = "") {
-    const cards = [1, 2, 3, 5, 8, 13, 21];
+  const cards = [1, 2, 3, 5, 8, 13, 21];
 
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -32,8 +32,8 @@ export function gamePage(userName, avatar, gameState = "") {
                             <p class="text-secondary text-center fs-5">Pick one card</p>
                             <div id="cards">
                                                     ${cards
-        .map(
-            (n) => `
+                                                      .map(
+                                                        (n) => `
                         <div class="poker-card" data-on:click="@post('/game/vote?player=${userName}&value=${n}')">
 ${n}
 <span
@@ -42,8 +42,8 @@ class="dot"
 </span>
 </div>
                         `,
-        )
-        .join("")}
+                                                      )
+                                                      .join("")}
                         </div>
                         </div>
                     </div>

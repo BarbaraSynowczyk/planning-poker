@@ -28,27 +28,7 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
         t.storyPoints
     );
 
-    function formatDate(dateString) {
-        if (!dateString) return "-";
-        const date = new Date(dateString);
-        return date.toLocaleDateString("pl-PL");
-    }
-
-    function timeAgo(dateString) {
-        if (!dateString) return "-";
-
-        const now = new Date();
-        const date = new Date(dateString);
-        const diff = Math.floor((now - date) / 1000);
-
-        if (diff < 60) return "just now";
-        if (diff < 3600) return Math.floor(diff / 60) + " min ago";
-        if (diff < 86400) return Math.floor(diff / 3600) + " h ago";
-
-        return Math.floor(diff / 86400) + " days ago";
-    }
-
-  return `<!doctype html>
+    return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -64,9 +44,10 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🛡️%3C/text%3E%3C/svg%3E"
     />
+    <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.8/bundles/datastar.js"></script>
     
   </head>
-    <body>
+    <body data-star-root>
     <div class="container-fluid">
     <!-- HEADER -->
     <div class="px-5">
@@ -102,12 +83,12 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
             </button>
             <div class="jira-dropdown-menu">
               ${filters
-                .map(
-                  (f) => `
+        .map(
+            (f) => `
               <div class="jira-option" data-jql="${f.jql}">${f.name}</div>
               `,
-                )
-                .join("")}
+        )
+        .join("")}
             </div>
           </div>
                <div class="jql-snippet">
@@ -176,21 +157,21 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
               <!-- FEATURE -->
 
 ${Object.entries(features).length === 0 ? "" : Object.entries(features)
-      .map(([featureName, featureTasks]) => {
+        .map(([featureName, featureTasks]) => {
 
-          const analyze = featureTasks.filter((t) =>
-              t.labels && t.labels.length > 0
-          );
+            const analyze = featureTasks.filter((t) =>
+                t.labels && t.labels.length > 0
+            );
 
-          const estimate = featureTasks.filter((t) =>
-              !t.storyPoints && (!t.labels || t.labels.length === 0)
-          );
+            const estimate = featureTasks.filter((t) =>
+                !t.storyPoints && (!t.labels || t.labels.length === 0)
+            );
 
-          const estimated = featureTasks.filter((t) =>
-              t.storyPoints
-          );
+            const estimated = featureTasks.filter((t) =>
+                t.storyPoints
+            );
 
-          return `
+            return `
 
 <div class="feature-box my-2">
 
@@ -205,17 +186,18 @@ ${featureTasks[0]?.featureKey ?? ""} ${featureName}
 <div class="col-12 col-md-4 kanban-column analyze-column">
 
 ${analyze
-  .map(
-    (task) => `
+                .map(
+                    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
   data-name="${task.name}"
   data-points="${task.storyPoints ?? "-"}"
   data-labels="${task.labels?.join(", ") ?? ""}"
-  data-description="${task.description ?? ""}"
-  data-created="${task.created ?? ""}"
-data-updated="${task.updated ?? ""}"
+  data-description='${task.description ?? ""}'
+  data-created="${task.created}"
+  data-updated="${task.updated}"
+  data-comments="${encodeURIComponent(JSON.stringify(task.comments || []))}"
 >
 
 <div class="fs-5 text-light fw-semibold">
@@ -242,8 +224,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-  )
-  .join("")}
+                )
+                .join("")}
 
 </div>
 
@@ -253,18 +235,20 @@ ${task.storyPoints ?? "-"}
 <div class="col-12 col-md-4 kanban-column estimate-column">
 
 ${estimate
-  .map(
-    (task) => `
+                .map(
+                    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
   data-name="${task.name}"
   data-points="${task.storyPoints ?? "-"}"
   data-labels="${task.labels?.join(", ") ?? ""}"
-  data-description="${task.description ?? ""}"
-  data-created="${task.created ?? ""}"
-data-updated="${task.updated ?? ""}"
->
+  data-description='${task.description ?? ""}'
+  data-created="${task.created}"
+  data-updated="${task.updated}"
+  data-comments="${encodeURIComponent(JSON.stringify(task.comments || []))}"
+
+>  
 <div class="task-top">
 <span class="fs-5 text-light fw-semibold">
 ${task.key}
@@ -283,8 +267,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-  )
-  .join("")}
+                )
+                .join("")}
 
 </div>
 
@@ -294,20 +278,26 @@ ${task.storyPoints ?? "-"}
 <div class="col-12 col-md-4 kanban-column estimated-column">
 
 ${estimated
-  .map(
-    (task) => `
+                .map(
+                    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
   data-name="${task.name}"
   data-points="${task.storyPoints ?? "-"}"
   data-labels="${task.labels?.join(", ") ?? ""}"
-  data-description="${task.description ?? ""}"
-  data-created="${task.created ?? ""}"
-    data-updated="${task.updated ?? ""}"
+  data-description='${task.description ?? ""}'
+  data-created="${task.created}"
+  data-updated="${task.updated}"
+  data-comments="${encodeURIComponent(JSON.stringify(task.comments || []))}"
 >
 
 <div class="fs-5 text-light fw-semibold">
+
+
+
+
+
 ${task.key}
 </div>
 
@@ -323,8 +313,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-  )
-  .join("")}
+                )
+                .join("")}
 
 </div>
 
@@ -332,8 +322,8 @@ ${task.storyPoints ?? "-"}
 </div>
 
 `;
-  })
-  .join("")}
+        })
+        .join("")}
          
       </div>
     </div>
@@ -361,9 +351,9 @@ ${task.storyPoints ?? "-"}
                   </div>
                 </div>
                 <div class="ticket-right text-light">
-                  <div class="my-2">Created: yesterday</div>
-                  <div class="my-2">Updated: 1 hours ago</div>
-                  <div class="my-2">Date: 03.01.2025</div>
+                  <div class="my-2 created">Created: yesterday</div>
+                  <div class="my-2 updated">Updated: 1 hours ago</div>
+                  <div class="my-2 date">Date: 03.01.2025</div>
                 </div>
               </div>
               <div class="ticket-description text-secondary">
@@ -373,7 +363,7 @@ ${task.storyPoints ?? "-"}
                   <li>Implement caching strategy</li>
                 </ul>
               </div>
-              <div class="ticket-comment">
+              <div class="ticket-comments">
                 <img src="avatar.png" class="avatar" />
                 <div class="comment-bubble text-light">
                   <span class="comment-author"> Anna K. </span>
@@ -400,145 +390,121 @@ ${task.storyPoints ?? "-"}
 
 </div>
     <script>
-      /*####################################### AI GENEREATED #######################################*/
-      
+document.addEventListener("DOMContentLoaded", () => {
 
-      
-      function copyLink() {
-        const input = document.querySelector(".session-input");
-        navigator.clipboard.writeText(input.value);
-      }
+  function formatDate(dateString) {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pl-PL");
+  }
 
-      const dropdown = document.querySelector(".jira-dropdown");
-      const btn = dropdown.querySelector(".jira-dropdown-btn");
-      const options = dropdown.querySelectorAll(".jira-option");
-      const selected = dropdown.querySelector(".selected");
+  function timeAgo(dateString) {
+    if (!dateString) return "-";
 
-      btn.onclick = () => {
-        dropdown.classList.toggle("open");
+    const now = new Date();
+    const date = new Date(dateString);
+    const diff = Math.floor((now - date) / 1000);
 
-      };
+    if (diff < 60) return "just now";
+    if (diff < 3600) return Math.floor(diff / 60) + " min ago";
+    if (diff < 86400) return Math.floor(diff / 3600) + " h ago";
 
+    return Math.floor(diff / 86400) + " days ago";
+  }
+
+  function copyLink() {
+    const input = document.querySelector(".session-input");
+    navigator.clipboard.writeText(input.value);
+  }
+
+  const dropdown = document.querySelector(".jira-dropdown");
+  const btn = dropdown.querySelector(".jira-dropdown-btn");
+  const selected = dropdown.querySelector(".selected");
   const jqlCode = document.getElementById("jqlCode");
+
   let currentJql = "";
-  
-options.forEach((option) => {
-  option.onclick = () => {
 
-    const jql = option.dataset.jql;
-    currentJql = jql;
-
-    selected.textContent = option.textContent;
-
-    jqlCode.innerHTML = highlightJql(jql);
-    document.querySelector(".jql-snippet").classList.add("active");
-
-    dropdown.classList.remove("open");
+  btn.onclick = () => {
+    dropdown.classList.toggle("open");
   };
-});
 
+  const options = document.querySelectorAll(".jira-option");
 
-function highlightJql(jql){
+  options.forEach((option) => {
+    option.onclick = () => {
+      const jql = option.dataset.jql;
+      console.log("klik działa:", jql);
 
-  const keywords = [
-    "AND","OR","NOT","IN","ORDER","BY","DESC","ASC","IS","EMPTY"
-  ];
+      currentJql = jql;
 
-  let html = jql;
+      selected.textContent = option.textContent;
 
-  // keywords
-  keywords.forEach(k=>{
-    const r = new RegExp('\\b'+k+'\\b','g');
-    html = html.replace(r, '<span class="jql-key">'+k+'</span>');
+      jqlCode.innerHTML = highlightJql(jql);
+      document.querySelector(".jql-snippet").classList.add("active");
+
+      dropdown.classList.remove("open");
+    };
   });
 
-  // project names (np KAN)
-html = html.replace(
-  /\\b[A-Z]{2,10}\\b/g,
-  '<span class="jql-project">$&</span>'
-);
+  function highlightJql(jql){
+    const keywords = ["AND","OR","NOT","IN","ORDER","BY","DESC","ASC","IS","EMPTY"];
 
-  return html;
+    let html = jql;
+
+    keywords.forEach(k=>{
+      const r = new RegExp('\\\\b'+k+'\\\\b','g');
+      html = html.replace(r, '<span class="jql-key">'+k+'</span>');
+    });
+
+    html = html.replace(
+      /\\b[A-Z]{2,10}\\b/g,
+      '<span class="jql-project">$&</span>'
+    );
+
+    return html;
+  }
+
+  document.addEventListener("click", (e) => {
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove("open");
+    }
+  });
+
+window.openJql = function () {
+  console.log("OPEN JQL klik");
+
+  const overlay = document.getElementById("jqlOverlay"); // 🔥 TU
+  const modal = document.getElementById("jqlModalCode");
+
+  if (!currentJql) {
+    alert("Najpierw wybierz filtr 😄");
+    return;
+  }
+
+  modal.innerHTML = highlightJql(currentJql);
+
+  overlay.style.display = "flex";
+};
+
+ window.closeJql = function () {
+  const overlay = document.getElementById("jqlOverlay"); // 🔥 TU
+  overlay.style.display = "none";
+};
+
+const overlayEl = document.getElementById("jqlOverlay");
+
+if (overlayEl) {
+  overlayEl.addEventListener("click", (e) => {
+    if (e.target === overlayEl) {
+      window.closeJql();
+    }
+  });
 }
-      document.addEventListener("click", (e) => {
-        if (!dropdown.contains(e.target)) {
-          dropdown.classList.remove("open");
-        }
-      });
-//   const closeBtn = document.getElementById("closePreview");
-//   const kanban = document.getElementById("kanbanColumn");
-//  
-//
-//
-//  
-// const cards = document.querySelectorAll(".task-card");
-// const preview = document.getElementById("ticketPreview");
 
-
-// document.addEventListener("DOMContentLoaded", () => {
-//
-//   const cards = document.querySelectorAll(".task-card");
-//   const preview = document.getElementById("ticketPreview");
-//   const closeBtn = document.getElementById("closePreview");
-//   const kanban = document.getElementById("kanbanColumn");
-//
-//   cards.forEach((card) => {
-//     card.addEventListener("click", () => {
-//
-//       console.log("CLICK działa");
-//
-//       const key = card.dataset.key;
-//       const name = card.dataset.name;
-//       const labels = card.dataset.labels;
-//       const points = card.dataset.points;
-//       const created = card.dataset.created;
-//       const updated = card.dataset.updated;
-//
-//       document.querySelector(".ticket-right").innerHTML =
-//         "<div class='my-2'>Created: " + timeAgo(created) + "</div>" +
-//         "<div class='my-2'>Updated: " + timeAgo(updated) + "</div>" +
-//         "<div class='my-2'>Date: " + formatDate(created) + "</div>";
-//
-//       document.querySelector(".ticket-id").textContent = key;
-//       document.querySelector(".ticket-name").textContent = name;
-//
-//       let status = "To Estimate";
-//
-//       if (labels && labels.length > 0) {
-//         status = "To Analyze";
-//       } else if (points && points !== "-") {
-//         status = "Estimated";
-//       }
-//
-//       document.querySelector(".ticket-status").textContent = status;
-//
-//       document.querySelector(".ticket-meta .ticket-left div:nth-child(1)")
-//         .innerHTML = "<b class='text-secondary fs-6'>Story Points</b><br>" + (points || "-");
-//
-//       const descriptionContainer = document.querySelector(".ticket-description");
-//       descriptionContainer.innerHTML = card.dataset.description || "No description";
-//
-//       preview.style.display = "block";
-//
-//       kanban.classList.remove("col-xl-12");
-//       kanban.classList.add("col-xl-9");
-//
-//       cards.forEach((c) => c.classList.remove("active"));
-//       card.classList.add("active");
-//     });
-//   });
-//
-//   closeBtn.addEventListener("click", () => {
-//     preview.style.display = "none";
-//
-//     kanban.classList.remove("col-xl-9");
-//     kanban.classList.add("col-xl-12");
-//
-//     cards.forEach((c) => c.classList.remove("active"));
-//   });
-//
-// });
-
+const cards = document.querySelectorAll(".task-card");
+const preview = document.getElementById("ticketPreview");
+const kanban = document.getElementById("kanbanColumn");
+const closeBtn = document.getElementById("closePreview");
 
 cards.forEach((card) => {
   card.addEventListener("click", () => {
@@ -547,6 +513,13 @@ cards.forEach((card) => {
     const name = card.dataset.name;
     const labels = card.dataset.labels;
     const points = card.dataset.points;
+    const description = card.dataset.description;
+    
+    const created = card.dataset.created;
+    const updated = card.dataset.updated;
+    const comments = JSON.parse(
+      decodeURIComponent(card.dataset.comments || "[]")
+    );
 
     document.querySelector(".ticket-id").textContent = key;
     document.querySelector(".ticket-name").textContent = name;
@@ -564,10 +537,21 @@ cards.forEach((card) => {
     document.querySelector(".ticket-meta .ticket-left div:nth-child(1)")
       .innerHTML = "<b class='text-secondary fs-6'>Story Points</b><br>" + (points || "-");
 
-    const descriptionContainer = document.querySelector(".ticket-description");
-    descriptionContainer.innerHTML = card.dataset.description || "No description";
+    document.querySelector(".ticket-description").innerHTML = description || "No description";
+    console.log(description);
+    
+    const commentsContainer = document.querySelector(".ticket-comments");
+    commentsContainer.innerHTML = "";
+    
+    document.querySelector(".created").textContent =
+    "Created: " + timeAgo(created);
 
-    // 🔥 TO MUSI BYĆ
+    document.querySelector(".updated").textContent =
+      "Updated: " + timeAgo(updated);
+    
+    document.querySelector(".date").textContent =
+      "Date: " + formatDate(created);
+
     preview.style.display = "block";
 
     kanban.classList.remove("col-xl-12");
@@ -575,10 +559,39 @@ cards.forEach((card) => {
 
     cards.forEach((c) => c.classList.remove("active"));
     card.classList.add("active");
+    
+
+commentsContainer.innerHTML = "";
+
+if (comments.length === 0) {
+  commentsContainer.innerHTML = \`
+    <div class="text-secondary">No comments</div>
+  \`;
+} else {
+  comments.forEach(function (comment) {
+    commentsContainer.innerHTML += \`
+      <div class="d-flex gap-2 my-3">
+        <img src="\${comment.avatar}" class="avatar" />
+
+        <div class="comment-bubble text-light">
+          <div class="d-flex justify-content-between">
+            <span class="comment-author">\${comment.author}</span>
+            <span class="text-secondary small">
+              \${comment.created}
+            </span>
+          </div>
+
+          <div class="mt-1">
+            \${comment.text}
+          </div>
+        </div>
+      </div>
+    \`;
+  });
+}
   });
 });
 
-// 👉 CLOSE BUTTON (POZA foreach!)
 closeBtn.addEventListener("click", () => {
   preview.style.display = "none";
 
@@ -587,103 +600,10 @@ closeBtn.addEventListener("click", () => {
 
   cards.forEach((c) => c.classList.remove("active"));
 });
-// 👉 CLICK NA KARTĘ
-// cards.forEach((card) => {
-//   card.addEventListener("click", () => {
-//      
-//       console.log("clicked");
-//  
-//
-//     const key = card.dataset.key;
-//     const name = card.dataset.name;
-//     const labels = card.dataset.labels;
-//     const points = card.dataset.points;
-//     const created = card.dataset.created;
-//     const updated = card.dataset.updated;
-//    
-// document.querySelector(".ticket-right").innerHTML =
-//   "<div class='my-2'>Created: " + timeAgo(created) + "</div>" +
-//   "<div class='my-2'>Updated: " + timeAgo(updated) + "</div>" +
-//   "<div class='my-2'>Date: " + formatDate(created) + "</div>";
-//        
-//
-//     document.querySelector(".ticket-id").textContent = key;
-//     document.querySelector(".ticket-name").textContent = name;
-//
-//     let status = "To Estimate";
-//
-//     if (labels && labels.length > 0) {
-//       status = "To Analyze";
-//     } else if (points && points !== "-") {
-//       status = "Estimated";
-//     }
-//
-//     document.querySelector(".ticket-status").textContent = status;
-//
-//     document.querySelector(".ticket-meta .ticket-left div:nth-child(1)")
-//       .innerHTML = "<b class='text-secondary fs-6'>Story Points</b><br>" + (points || "-");
-//
-//     const descriptionContainer = document.querySelector(".ticket-description");
-//     descriptionContainer.innerHTML = card.dataset.description || "No description";
-//
-//     // 🔥 TO MUSI BYĆ
-//     preview.style.display = "block";
-//
-//     kanban.classList.remove("col-xl-12");
-//     kanban.classList.add("col-xl-9");
-//
-//     cards.forEach((c) => c.classList.remove("active"));
-//     card.classList.add("active");
-//   });
-// });
-//
-// // 👉 CLOSE BUTTON (POZA foreach!)
-// closeBtn.addEventListener("click", () => {
-//   preview.style.display = "none";
-//
-//   kanban.classList.remove("col-xl-9");
-//   kanban.classList.add("col-xl-12");
-//
-//   cards.forEach((c) => c.classList.remove("active"));
-// });
-//    
 
-  
-     
-     const overlay = document.getElementById("jqlOverlay");
-     
-
-function openJql(){
-
-  const modal = document.getElementById("jqlModalCode");
-
-  if(!currentJql) return;
-
-  modal.innerHTML = highlightJql(currentJql);
-
-  overlay.style.display="flex";
-}
-
-function closeJql(){
-  overlay.style.display="none";
-}
-
-overlay.addEventListener("click",(e)=>{
-  if(e.target===overlay){
-    closeJql();
-  }
 });
-
-      /*##############################################################################################*/
     </script>
-    <script src="https://unpkg.com/@atlaskit/renderer/dist/renderer.umd.js"></script>
   </body>
 </html>
 `;
 }
-
-
-
-
-
-
