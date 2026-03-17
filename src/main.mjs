@@ -1,10 +1,14 @@
 import http from "node:http";
-import { mainPage, gamePage, moderatorPage } from "./views/templates.mjs";
+import { moderatorPage } from "./views/moderator.mjs";
+import {mainPage} from "./views/mainPage.mjs";
+import {gamePage} from "./views/gamePage.mjs";
+
 import { Game } from "./game/game.mjs";
 import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 
 import fs from "node:fs";
 import path from "node:path";
+
 
 const game = new Game();
 const sessions = {};
@@ -159,6 +163,8 @@ const server = http.createServer(async (req, res) => {
               description: i.fields.description,
               created: i.fields.created,
               updated: i.fields.updated,
+              feature: i.fields.parent?.fields?.summary ?? "No Feature",
+              featureKey: i.fields.parent?.key ?? null,
               comments:
                 i.fields.comment?.comments.map((c) => ({
                   author: c.author.displayName,
@@ -179,7 +185,7 @@ const server = http.createServer(async (req, res) => {
           //paginacja
 
           const r = await fetch(
-            `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016`,
+            `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016,parent`,
             {
               headers: {
                 Authorization: `Basic ${auth}`,

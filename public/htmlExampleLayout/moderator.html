@@ -267,13 +267,10 @@
 
       cards.forEach((card) => {
         card.addEventListener("click", () => {
-          // pokaż preview
           preview.classList.add("active");
 
-          // usuń active z innych kart
           cards.forEach((c) => c.classList.remove("active"));
 
-          // zaznacz klikniętą
           card.classList.add("active");
         });
       });
