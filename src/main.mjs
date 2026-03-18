@@ -1,5 +1,8 @@
 import http from "node:http";
-import { mainPage, gamePage, moderatorPage } from "./views/templates.mjs";
+import { moderatorPage } from "./views/moderator.mjs";
+import { mainPage } from "./views/mainPage.mjs";
+import { gamePage } from "./views/gamePage.mjs";
+
 import { Game } from "./game/game.mjs";
 import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 
@@ -116,13 +119,13 @@ const server = http.createServer(async (req, res) => {
         // ############################# GETTING TASKS, GEN BY AI ##############################
 
         const projectResponse = await fetch(
-          `https://${domain}/rest/api/3/project/search`,
-          {
-            headers: {
-              Authorization: `Basic ${auth}`,
-              Accept: "application/json",
+            `https://${domain}/rest/api/3/project/search`,
+            {
+              headers: {
+                Authorization: `Basic ${auth}`,
+                Accept: "application/json",
+              },
             },
-          },
         );
 
         const projectData = await projectResponse.json();
@@ -141,6 +144,7 @@ const server = http.createServer(async (req, res) => {
           filters,
           projects,
           tasks: allTasks,
+          allTasks: allTasks,
         };
 
         for (const p of projects) {
@@ -156,16 +160,32 @@ const server = http.createServer(async (req, res) => {
               assignee: i.fields.assignee?.displayName,
               reporter: i.fields.reporter?.displayName,
               labels: i.fields.labels,
-              description: i.fields.description,
+              description: i.renderedFields?.description || "",
               created: i.fields.created,
               updated: i.fields.updated,
+              feature: i.fields.parent?.fields?.summary ?? "No Feature",
+              featureKey: i.fields.parent?.key ?? null,
               comments:
-                i.fields.comment?.comments.map((c) => ({
-                  author: c.author.displayName,
-                  text: c.body,
-                })) ?? [],
+                  i.renderedFields?.comment?.comments.map((c) => ({
+                    author: c.author.displayName,
+                    avatar: c.author.avatarUrls["24x24"],
+
+                    text: c.body || "",
+
+                    created: c.created,
+                  })) ?? [],
+              // comments:
+              //     i.fields.comment?.comments.map((c) => ({
+              //       author: c.author.displayName,
+              //       avatar: c.author.avatarUrls["24x24"],
+              //
+              //       text:  c.body || "",
+              //
+              //       created: c.created
+              //     })) ?? [],
             }));
 
+            console.log(...tasks);
             allTasks.push(...tasks);
 
             // console.log(`Tasks for ${p.key}:`, tasks);
@@ -179,16 +199,17 @@ const server = http.createServer(async (req, res) => {
           //paginacja
 
           const r = await fetch(
-            `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016`,
-            {
-              headers: {
-                Authorization: `Basic ${auth}`,
-                Accept: "application/json",
+              `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016,parent&expand=renderedFields`,
+              {
+                headers: {
+                  Authorization: `Basic ${auth}`,
+                  Accept: "application/json",
+                },
               },
-            },
           );
 
           const data = await r.json();
+          // const comments = data.renderedFields?.comment?.comments || [];
           return data.issues ?? [];
         }
 
@@ -211,13 +232,13 @@ const server = http.createServer(async (req, res) => {
 
           for (const f of filters) {
             const fr = await fetch(
-              `https://${domain}/rest/api/3/filter/${f.id}`,
-              {
-                headers: {
-                  Authorization: `Basic ${auth}`,
-                  Accept: "application/json",
+                `https://${domain}/rest/api/3/filter/${f.id}`,
+                {
+                  headers: {
+                    Authorization: `Basic ${auth}`,
+                    Accept: "application/json",
+                  },
                 },
-              },
             );
 
             const fd = await fr.json();
@@ -268,7 +289,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     const { avatar, accountId, domain, auth, filters, projects, tasks } =
-      session;
+        session;
 
     const projectKey = projects[0].key;
 
@@ -294,6 +315,90 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // FILTER TASKS BY JQL
+  if (url.pathname === "/filter" && req.method === "POST") {
+    let body = "";
+
+    req.on("data", (chunk) => (body += chunk));
+
+    req.on("end", async () => {
+      const { userName, jql } = JSON.parse(body);
+
+      const session = sessions[userName];
+
+      if (!session) {
+        res.writeHead(400);
+        res.end("No session");
+        return;
+      }
+
+
+      if (!jql || jql === "ALL") {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(
+            moderatorPage(
+                userName,
+                session.avatar,
+                session.filters,
+                session.allTasks
+            )
+        );
+        return;
+      }
+
+      const { domain, auth } = session;
+
+      const encodedJql = encodeURIComponent(jql);
+
+      const r = await fetch(
+          `https://${domain}/rest/api/3/search/jql?jql=${encodedJql}&maxResults=100&fields=summary,labels,description,created,updated,comment,customfield_10016,parent&expand=renderedFields`,
+          {
+            headers: {
+              Authorization: `Basic ${auth}`,
+              Accept: "application/json",
+            },
+          },
+      );
+
+      const data = await r.json();
+
+      console.log("STATUS:", r.status);
+      console.log("FILTER RESPONSE:", data);
+
+      if (!data.issues) {
+        console.error("JIRA ERROR:", data);
+
+        // res.writeHead(200, { "Content-Type": "text/html" });
+        // res.end("<h2>Błąd filtrowania 😅 sprawdź console</h2>");
+        return;
+      }
+
+      const tasks = data.issues.map((i) => ({
+        key: i.key,
+        name: i.fields.summary,
+        storyPoints: i.fields.customfield_10016,
+        labels: i.fields.labels,
+        description: i.renderedFields?.description || "",
+        created: i.fields.created,
+        updated: i.fields.updated,
+        feature: i.fields.parent?.fields?.summary ?? "No Feature",
+        featureKey: i.fields.parent?.key ?? null,
+        comments:
+            i.renderedFields?.comment?.comments.map((c) => ({
+              author: c.author.displayName,
+              avatar: c.author.avatarUrls["24x24"],
+              text: c.body || "",
+              created: c.created,
+            })) ?? [],
+      }));
+
+      session.tasks = tasks;
+
+      res.writeHead(200, { "Content-Type": "text/html" });
+      res.end(moderatorPage(userName, session.avatar, session.filters, tasks));
+    });
+  }
+
   // VOTE
   if (url.pathname === "/game/vote" && req.method === "POST") {
     const player = url.searchParams.get("player");
@@ -311,21 +416,21 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === "/game/updates") {
     ServerSentEventGenerator.stream(
-      req,
-      res,
-      (stream) => {
-        game.addClient(stream);
+        req,
+        res,
+        (stream) => {
+          game.addClient(stream);
 
-        stream.patchElements(game.renderGameState());
+          stream.patchElements(game.renderGameState());
 
-        req.on("close", () => {
-          game.removeClient(stream);
-          stream.close();
-        });
-      },
-      {
-        keepalive: true,
-      },
+          req.on("close", () => {
+            game.removeClient(stream);
+            stream.close();
+          });
+        },
+        {
+          keepalive: true,
+        },
     );
 
     return;
