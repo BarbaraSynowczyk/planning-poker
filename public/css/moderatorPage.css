@@ -695,3 +695,7 @@ body {
   transform: translateX(0);
   transition: all 0.2s ease;
 }
+
+.row.g-4 {
+  align-items: flex-start;
+}

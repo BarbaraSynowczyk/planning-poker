@@ -1,34 +1,31 @@
 export function moderatorPage(userName, avatar, filters = [], tasks = []) {
+  const tasksWithFeature = tasks.filter(
+    (t) => t.feature && t.feature !== "No Feature",
+  );
 
-    const tasksWithFeature = tasks.filter(
-        t => t.feature && t.feature !== "No Feature"
-    );
+  const features = {};
 
-    const features = {};
+  tasksWithFeature.forEach((task) => {
+    const feature = task.feature;
 
-    tasksWithFeature.forEach(task => {
-        const feature = task.feature;
+    if (!features[feature]) {
+      features[feature] = [];
+    }
 
-        if (!features[feature]) {
-            features[feature] = [];
-        }
+    features[feature].push(task);
+  });
 
-        features[feature].push(task);
-    });
+  const analyze = tasksWithFeature.filter(
+    (t) => t.labels && t.labels.length > 0,
+  );
 
-    const analyze = tasksWithFeature.filter((t) =>
-        t.labels && t.labels.length > 0
-    );
+  const estimate = tasksWithFeature.filter(
+    (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
+  );
 
-    const estimate = tasksWithFeature.filter((t) =>
-        !t.storyPoints && (!t.labels || t.labels.length === 0)
-    );
+  const estimated = tasksWithFeature.filter((t) => t.storyPoints);
 
-    const estimated = tasksWithFeature.filter((t) =>
-        t.storyPoints
-    );
-
-    return `<!doctype html>
+  return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -82,13 +79,14 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
               <span class="arrow"></span>
             </button>
             <div class="jira-dropdown-menu">
+                <div class="jira-option" data-jql="ALL">Show all</div>
               ${filters
-        .map(
-            (f) => `
+                .map(
+                  (f) => `
               <div class="jira-option" data-jql="${f.jql}">${f.name}</div>
               `,
-        )
-        .join("")}
+                )
+                .join("")}
             </div>
           </div>
                <div class="jql-snippet">
@@ -156,22 +154,22 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
 
               <!-- FEATURE -->
 
-${Object.entries(features).length === 0 ? "" : Object.entries(features)
+${
+  Object.entries(features).length === 0
+    ? ""
+    : Object.entries(features)
         .map(([featureName, featureTasks]) => {
+          const analyze = featureTasks.filter(
+            (t) => t.labels && t.labels.length > 0,
+          );
 
-            const analyze = featureTasks.filter((t) =>
-                t.labels && t.labels.length > 0
-            );
+          const estimate = featureTasks.filter(
+            (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
+          );
 
-            const estimate = featureTasks.filter((t) =>
-                !t.storyPoints && (!t.labels || t.labels.length === 0)
-            );
+          const estimated = featureTasks.filter((t) => t.storyPoints);
 
-            const estimated = featureTasks.filter((t) =>
-                t.storyPoints
-            );
-
-            return `
+          return `
 
 <div class="feature-box my-2">
 
@@ -186,8 +184,8 @@ ${featureTasks[0]?.featureKey ?? ""} ${featureName}
 <div class="col-12 col-md-4 kanban-column analyze-column">
 
 ${analyze
-                .map(
-                    (task) => `
+  .map(
+    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
@@ -210,11 +208,17 @@ ${task.name}
 
 <div class="task-footer">
 <span class="bg-warning tag fw-semibold">
-${task.labels?.map(label => `
+${
+  task.labels
+    ?.map(
+      (label) => `
 <span class="bg-warning tag fw-semibold">
 ${label}
 </span>
-`).join("") ?? ""}
+`,
+    )
+    .join("") ?? ""
+}
 </span>
 
 <span class="points">
@@ -224,8 +228,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-                )
-                .join("")}
+  )
+  .join("")}
 
 </div>
 
@@ -235,8 +239,8 @@ ${task.storyPoints ?? "-"}
 <div class="col-12 col-md-4 kanban-column estimate-column">
 
 ${estimate
-                .map(
-                    (task) => `
+  .map(
+    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
@@ -267,8 +271,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-                )
-                .join("")}
+  )
+  .join("")}
 
 </div>
 
@@ -278,8 +282,8 @@ ${task.storyPoints ?? "-"}
 <div class="col-12 col-md-4 kanban-column estimated-column">
 
 ${estimated
-                .map(
-                    (task) => `
+  .map(
+    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
@@ -313,8 +317,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-                )
-                .join("")}
+  )
+  .join("")}
 
 </div>
 
@@ -323,7 +327,8 @@ ${task.storyPoints ?? "-"}
 
 `;
         })
-        .join("")}
+        .join("")
+}
          
       </div>
     </div>
@@ -431,18 +436,73 @@ document.addEventListener("DOMContentLoaded", () => {
   const options = document.querySelectorAll(".jira-option");
 
   options.forEach((option) => {
-    option.onclick = () => {
+  option.onclick = async () => {
+      
       const jql = option.dataset.jql;
-      console.log("klik działa:", jql);
 
+      
+    if (jql === "ALL") {
+  selected.textContent = "Show all";
+  document.querySelector(".jql-snippet").classList.remove("active");
+
+  const res = await fetch("/filter", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      userName: "${userName}",
+      jql: "ALL", // 🔥 ważne
+    }),
+  });
+
+  const html = await res.text();
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+
+  const newKanban = doc.querySelector(".kanban-container");
+
+  document.querySelector(".kanban-container").innerHTML =
+    newKanban.innerHTML;
+
+  attachCardEvents();
+  return;
+}
+ 
+
+    
       currentJql = jql;
-
       selected.textContent = option.textContent;
-
+    
       jqlCode.innerHTML = highlightJql(jql);
       document.querySelector(".jql-snippet").classList.add("active");
-
+    
       dropdown.classList.remove("open");
+    
+      const res = await fetch("/filter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: "${userName}",
+          jql,
+        }),
+      });
+    
+      const html = await res.text();
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    
+    const newKanban = doc.querySelector(".kanban-container");
+    
+
+    document.querySelector(".kanban-container").innerHTML =
+      newKanban.innerHTML;
+    
+    attachCardEvents();
     };
   });
 
@@ -477,7 +537,7 @@ window.openJql = function () {
   const modal = document.getElementById("jqlModalCode");
 
   if (!currentJql) {
-    alert("Najpierw wybierz filtr 😄");
+    alert("choose your filtr first 😄");
     return;
   }
 
@@ -500,107 +560,110 @@ if (overlayEl) {
     }
   });
 }
-
-const cards = document.querySelectorAll(".task-card");
-const preview = document.getElementById("ticketPreview");
-const kanban = document.getElementById("kanbanColumn");
-const closeBtn = document.getElementById("closePreview");
-
-cards.forEach((card) => {
-  card.addEventListener("click", () => {
-
-    const key = card.dataset.key;
-    const name = card.dataset.name;
-    const labels = card.dataset.labels;
-    const points = card.dataset.points;
-    const description = card.dataset.description;
+function attachCardEvents() {
+    const cards = document.querySelectorAll(".task-card");
+    const preview = document.getElementById("ticketPreview");
+    const kanban = document.getElementById("kanbanColumn");
+    const closeBtn = document.getElementById("closePreview");
     
-    const created = card.dataset.created;
-    const updated = card.dataset.updated;
-    const comments = JSON.parse(
-      decodeURIComponent(card.dataset.comments || "[]")
-    );
-
-    document.querySelector(".ticket-id").textContent = key;
-    document.querySelector(".ticket-name").textContent = name;
-
-    let status = "To Estimate";
-
-    if (labels && labels.length > 0) {
-      status = "To Analyze";
-    } else if (points && points !== "-") {
-      status = "Estimated";
-    }
-
-    document.querySelector(".ticket-status").textContent = status;
-
-    document.querySelector(".ticket-meta .ticket-left div:nth-child(1)")
-      .innerHTML = "<b class='text-secondary fs-6'>Story Points</b><br>" + (points || "-");
-
-    document.querySelector(".ticket-description").innerHTML = description || "No description";
-    console.log(description);
+    cards.forEach((card) => {
+      card.addEventListener("click", () => {
     
-    const commentsContainer = document.querySelector(".ticket-comments");
+        const key = card.dataset.key;
+        const name = card.dataset.name;
+        const labels = card.dataset.labels;
+        const points = card.dataset.points;
+        const description = card.dataset.description;
+        
+        const created = card.dataset.created;
+        const updated = card.dataset.updated;
+        const comments = JSON.parse(
+          decodeURIComponent(card.dataset.comments || "[]")
+        );
+    
+        document.querySelector(".ticket-id").textContent = key;
+        document.querySelector(".ticket-name").textContent = name;
+    
+        let status = "To Estimate";
+    
+        if (labels && labels.length > 0) {
+          status = "To Analyze";
+        } else if (points && points !== "-") {
+          status = "Estimated";
+        }
+    
+        document.querySelector(".ticket-status").textContent = status;
+    
+        document.querySelector(".ticket-meta .ticket-left div:nth-child(1)")
+          .innerHTML = "<b class='text-secondary fs-6'>Story Points</b><br>" + (points || "-");
+    
+        document.querySelector(".ticket-description").innerHTML = description || "No description";
+        console.log(description);
+        
+        const commentsContainer = document.querySelector(".ticket-comments");
+        commentsContainer.innerHTML = "";
+        
+        document.querySelector(".created").textContent =
+        "Created: " + timeAgo(created);
+    
+        document.querySelector(".updated").textContent =
+          "Updated: " + timeAgo(updated);
+        
+        document.querySelector(".date").textContent =
+          "Date: " + formatDate(created);
+    
+        preview.style.display = "block";
+    
+        kanban.classList.remove("col-xl-12");
+        kanban.classList.add("col-xl-9");
+    
+        cards.forEach((c) => c.classList.remove("active"));
+        card.classList.add("active");
+        
+    
     commentsContainer.innerHTML = "";
     
-    document.querySelector(".created").textContent =
-    "Created: " + timeAgo(created);
-
-    document.querySelector(".updated").textContent =
-      "Updated: " + timeAgo(updated);
+    if (comments.length === 0) {
+      commentsContainer.innerHTML = \`
+        <div class="text-secondary">No comments</div>
+      \`;
+    } else {
+      comments.forEach(function (comment) {
+        commentsContainer.innerHTML += \`
+          <div class="d-flex gap-2 my-3">
+            <img src="\${comment.avatar}" class="avatar" />
     
-    document.querySelector(".date").textContent =
-      "Date: " + formatDate(created);
-
-    preview.style.display = "block";
-
-    kanban.classList.remove("col-xl-12");
-    kanban.classList.add("col-xl-9");
-
-    cards.forEach((c) => c.classList.remove("active"));
-    card.classList.add("active");
+            <div class="comment-bubble text-light">
+              <div class="d-flex justify-content-between">
+                <span class="comment-author">\${comment.author}</span>
+                <span class="text-secondary small">
+                  \${comment.created}
+                </span>
+              </div>
     
-
-commentsContainer.innerHTML = "";
-
-if (comments.length === 0) {
-  commentsContainer.innerHTML = \`
-    <div class="text-secondary">No comments</div>
-  \`;
-} else {
-  comments.forEach(function (comment) {
-    commentsContainer.innerHTML += \`
-      <div class="d-flex gap-2 my-3">
-        <img src="\${comment.avatar}" class="avatar" />
-
-        <div class="comment-bubble text-light">
-          <div class="d-flex justify-content-between">
-            <span class="comment-author">\${comment.author}</span>
-            <span class="text-secondary small">
-              \${comment.created}
-            </span>
+              <div class="mt-1">
+                \${comment.text}
+              </div>
+            </div>
           </div>
-
-          <div class="mt-1">
-            \${comment.text}
-          </div>
-        </div>
-      </div>
-    \`;
-  });
+        \`;
+      });
+    }
+      });
+    });
+    
+    
+    closeBtn.onclick = () => {
+      preview.style.display = "none";
+    
+      kanban.classList.remove("col-xl-9");
+      kanban.classList.add("col-xl-12");
+    
+      cards.forEach((c) => c.classList.remove("active"));
+    };
 }
-  });
-});
 
-closeBtn.addEventListener("click", () => {
-  preview.style.display = "none";
-
-  kanban.classList.remove("col-xl-9");
-  kanban.classList.add("col-xl-12");
-
-  cards.forEach((c) => c.classList.remove("active"));
-});
-
+attachCardEvents();
 });
     </script>
   </body>

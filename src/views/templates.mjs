@@ -1,5 +1,5 @@
 export function mainPage(error = "") {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
     <html>
     <head>
     <title>Planning Poker - Log in</title>
@@ -63,7 +63,9 @@ export function mainPage(error = "") {
             <span><img src="/images/jira_logo.png" id="logo_jira"/></span>Login with Jira</button>
             <p class="text-secondary my-2 text-nowrap text-center">Sign in using your Atlassian token to log in</p>
          </form>
-         ${error ? `
+         ${
+           error
+             ? `
             <div class="login-error" id="loginError">
                 
                 <div class="error-icon">
@@ -75,7 +77,9 @@ export function mainPage(error = "") {
             
                 <div class="error-text">${error}</div>
             </div>
-         ` : ""}
+         `
+             : ""
+         }
       </div>
     </div>
 <!--    <script>-->
@@ -91,14 +95,13 @@ export function mainPage(error = "") {
 
 <!--    </script>-->
     </body>
-</html>`
+</html>`;
 }
 
 export function gamePage(userName, avatar) {
+  const cards = [1, 2, 3, 5, 8, 13, 21];
 
-    const cards = [1,2,3,5,8,13,21]
-
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -124,14 +127,18 @@ export function gamePage(userName, avatar) {
                             <hr class="text-secondary"/>
                             <p class="text-secondary text-center fs-5">Pick one card</p>
                             <div id="cards">
-                                                    ${cards.map(n => `
+                                                    ${cards
+                                                      .map(
+                                                        (n) => `
                         <div class="poker-card">
                         ${n}
                         <span class="dot"
                         data-on:click="@post('/game/vote?player=${userName}&value=${n}')">
                         </span>
                         </div>
-                        `).join("")}
+                        `,
+                                                      )
+                                                      .join("")}
                         </div>
                         </div>
                     </div>
@@ -141,6 +148,5 @@ export function gamePage(userName, avatar) {
             </div>
         </div>
     </body>
-    </html>`
-
+    </html>`;
 }

@@ -29,6 +29,7 @@ export function mainPage(error = "") {
                       class="form-control border-0 bg-transparent text-white"
                       placeholder="Enter domain (e.g. company.atlassian.net)"
                       id="domain"
+                      value="basiasynowczyk.atlassian.net"
                       required>
             </div>
             <div class="token-input w-50 d-flex align-items-center gap-2 px-3 py-2 my-2">
@@ -67,7 +68,7 @@ export function mainPage(error = "") {
 <div class="login-error-container">
     ${
       error
-          ? `
+        ? `
     <div class="login-error" id="loginError">
         <div class="error-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -79,8 +80,8 @@ export function mainPage(error = "") {
         <div class="error-text">${error}</div>
     </div>
     `
-          : ""
-  }
+        : ""
+    }
 </div>
          </form>
       </div>
