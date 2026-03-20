@@ -1,0 +1,17 @@
+<div class="token-input w-50 d-flex align-items-center gap-2 px-3 py-2 my-2">
+
+    <span class="input-icon">{{icon}}</span>
+
+    <input
+            type="{{type}}"
+            name="{{name}}"
+            placeholder="{{placeholder}}"
+            class="form-control border-0 bg-transparent text-white"
+            id="{{id}}"
+            value="{{value}}"
+            autocomplete="{{autocomplete}}"
+            required
+            data-on:input="@get('/clear-error')"
+            data-target="#loginError"
+    >
+</div>
