@@ -1,5 +1,5 @@
 export function mainPage(error = "") {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
     <html>
     
     <head>
@@ -50,7 +50,9 @@ export function mainPage(error = "") {
             <span><img src="/images/jira_logo.png" id="logo_jira"/></span>Login with Jira</button>
             <p class="text-secondary my-2 text-nowrap text-center">Sign in using your Atlassian token to log in</p>
          </form>
-         ${error ? `
+         ${
+           error
+             ? `
             <div class="login-error" id="loginError">
                 
                 <div class="error-icon">
@@ -65,7 +67,9 @@ export function mainPage(error = "") {
                 <button class="error-close" onclick="closeError()">✕</button>
             
             </div>
-         ` : ""}
+         `
+             : ""
+         }
       </div>
     </div>
     <script>
@@ -81,11 +85,11 @@ export function mainPage(error = "") {
 
     </script>
     </body>
-</html>`
+</html>`;
 }
 
 export function gamePage(userName, avatar) {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -175,6 +179,5 @@ export function gamePage(userName, avatar) {
     
         </script>
     </body>
-    </html>`
-
+    </html>`;
 }

@@ -1,31 +1,31 @@
 export function moderatorPage(userName, avatar, filters = [], tasks = []) {
-    const tasksWithFeature = tasks.filter(
-        (t) => t.feature && t.feature !== "No Feature",
-    );
+  const tasksWithFeature = tasks.filter(
+    (t) => t.feature && t.feature !== "No Feature",
+  );
 
-    const features = {};
+  const features = {};
 
-    tasksWithFeature.forEach((task) => {
-        const feature = task.feature;
+  tasksWithFeature.forEach((task) => {
+    const feature = task.feature;
 
-        if (!features[feature]) {
-            features[feature] = [];
-        }
+    if (!features[feature]) {
+      features[feature] = [];
+    }
 
-        features[feature].push(task);
-    });
+    features[feature].push(task);
+  });
 
-    const analyze = tasksWithFeature.filter(
-        (t) => t.labels && t.labels.length > 0,
-    );
+  const analyze = tasksWithFeature.filter(
+    (t) => t.labels && t.labels.length > 0,
+  );
 
-    const estimate = tasksWithFeature.filter(
-        (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
-    );
+  const estimate = tasksWithFeature.filter(
+    (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
+  );
 
-    const estimated = tasksWithFeature.filter((t) => t.storyPoints);
+  const estimated = tasksWithFeature.filter((t) => t.storyPoints);
 
-    return `<!doctype html>
+  return `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -81,12 +81,12 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
             <div class="jira-dropdown-menu">
                 <div class="jira-option" data-jql="ALL">Show all</div>
               ${filters
-        .map(
-            (f) => `
+                .map(
+                  (f) => `
               <div class="jira-option" data-jql="${f.jql}">${f.name}</div>
               `,
-        )
-        .join("")}
+                )
+                .join("")}
             </div>
           </div>
                <div class="jql-snippet">
@@ -155,21 +155,21 @@ export function moderatorPage(userName, avatar, filters = [], tasks = []) {
               <!-- FEATURE -->
 
 ${
-        Object.entries(features).length === 0
-            ? ""
-            : Object.entries(features)
-                .map(([featureName, featureTasks]) => {
-                    const analyze = featureTasks.filter(
-                        (t) => t.labels && t.labels.length > 0,
-                    );
+  Object.entries(features).length === 0
+    ? ""
+    : Object.entries(features)
+        .map(([featureName, featureTasks]) => {
+          const analyze = featureTasks.filter(
+            (t) => t.labels && t.labels.length > 0,
+          );
 
-                    const estimate = featureTasks.filter(
-                        (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
-                    );
+          const estimate = featureTasks.filter(
+            (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
+          );
 
-                    const estimated = featureTasks.filter((t) => t.storyPoints);
+          const estimated = featureTasks.filter((t) => t.storyPoints);
 
-                    return `
+          return `
 
 <div class="feature-box my-2">
 
@@ -184,8 +184,8 @@ ${featureTasks[0]?.featureKey ?? ""} ${featureName}
 <div class="col-12 col-md-4 kanban-column analyze-column">
 
 ${analyze
-                        .map(
-                            (task) => `
+  .map(
+    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
@@ -209,16 +209,16 @@ ${task.name}
 <div class="task-footer">
 <span class="bg-warning tag fw-semibold">
 ${
-                                task.labels
-                                    ?.map(
-                                        (label) => `
+  task.labels
+    ?.map(
+      (label) => `
 <span class="bg-warning tag fw-semibold">
 ${label}
 </span>
 `,
-                                    )
-                                    .join("") ?? ""
-                            }
+    )
+    .join("") ?? ""
+}
 </span>
 
 <span class="points">
@@ -228,8 +228,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-                        )
-                        .join("")}
+  )
+  .join("")}
 
 </div>
 
@@ -239,8 +239,8 @@ ${task.storyPoints ?? "-"}
 <div class="col-12 col-md-4 kanban-column estimate-column">
 
 ${estimate
-                        .map(
-                            (task) => `
+  .map(
+    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
@@ -271,8 +271,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-                        )
-                        .join("")}
+  )
+  .join("")}
 
 </div>
 
@@ -282,8 +282,8 @@ ${task.storyPoints ?? "-"}
 <div class="col-12 col-md-4 kanban-column estimated-column">
 
 ${estimated
-                        .map(
-                            (task) => `
+  .map(
+    (task) => `
 <div 
   class="task-card"
   data-key="${task.key}"
@@ -317,8 +317,8 @@ ${task.storyPoints ?? "-"}
 
 </div>
 `,
-                        )
-                        .join("")}
+  )
+  .join("")}
 
 </div>
 
@@ -326,9 +326,9 @@ ${task.storyPoints ?? "-"}
 </div>
 
 `;
-                })
-                .join("")
-    }
+        })
+        .join("")
+}
          
       </div>
     </div>
@@ -369,7 +369,7 @@ ${task.storyPoints ?? "-"}
                 </ul>
               </div>
               <div class="ticket-comments">
-                <img src="avatar.png" class="avatar" />
+                <img src="avatar.png" class="avatar" id="userImage"/>
                 <div class="comment-bubble text-light">
                   <span class="comment-author"> Anna K. </span>
                   Let’s change the description.
@@ -396,7 +396,7 @@ ${task.storyPoints ?? "-"}
 </div>
     <script>
     
-    // ######################### GEN BY AI, MAY CONTAIN BUGS ##########################
+    // ######################### GEN BY AI ##########################
 document.addEventListener("DOMContentLoaded", () => {
 
   function formatDate(dateString) {
@@ -477,7 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
       currentJql = jql;
       selected.textContent = option.textContent;
     
-      jqlCode.innerHTML = highlightJql(jql);
+      jqlCode.innerHTML = jql;
       document.querySelector(".jql-snippet").classList.add("active");
     
       dropdown.classList.remove("open");
@@ -508,24 +508,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   });
 
-  function highlightJql(jql){
-    const keywords = ["AND","OR","NOT","IN","ORDER","BY","DESC","ASC","IS","EMPTY"];
-
-    let html = jql;
-
-    keywords.forEach(k=>{
-      const r = new RegExp('\\\\b'+k+'\\\\b','g');
-      html = html.replace(r, '<span class="jql-key">'+k+'</span>');
-    });
-
-    html = html.replace(
-      /\\b[A-Z]{2,10}\\b/g,
-      '<span class="jql-project">$&</span>'
-    );
-
-    return html;
-  }
-
   document.addEventListener("click", (e) => {
     if (!dropdown.contains(e.target)) {
       dropdown.classList.remove("open");
@@ -535,21 +517,16 @@ document.addEventListener("DOMContentLoaded", () => {
 window.openJql = function () {
   console.log("OPEN JQL klik");
 
-  const overlay = document.getElementById("jqlOverlay"); // 🔥 TU
+  const overlay = document.getElementById("jqlOverlay"); 
   const modal = document.getElementById("jqlModalCode");
 
-  if (!currentJql) {
-    alert("choose your filtr first 😄");
-    return;
-  }
-
-  modal.innerHTML = highlightJql(currentJql);
+  modal.innerHTML = currentJql;
 
   overlay.style.display = "flex";
 };
 
  window.closeJql = function () {
-  const overlay = document.getElementById("jqlOverlay"); // 🔥 TU
+  const overlay = document.getElementById("jqlOverlay");
   overlay.style.display = "none";
 };
 

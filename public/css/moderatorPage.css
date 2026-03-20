@@ -6,11 +6,15 @@ body {
   overflow-x: auto;
 }
 
-#logo_without_title,
-#userImage {
+#logo_without_title {
   max-height: 50px;
   width: auto;
   height: auto;
+}
+
+#userImage {
+  width: 36px;
+  height: 36px;
 }
 
 .user-role {
@@ -241,8 +245,8 @@ body {
   /*border-left: 1px solid rgba(255, 255, 255, 0.05);*/
 
   box-shadow:
-          0 0 6px rgba(0, 0, 0, 0.8),
-          0 0 12px rgba(66, 66, 66, 0.2);
+    0 0 6px rgba(0, 0, 0, 0.8),
+    0 0 12px rgba(66, 66, 66, 0.2);
   min-height: 200px;
 }
 
@@ -318,8 +322,8 @@ body {
   background: rgb(17, 17, 25);
 
   box-shadow:
-          0 0 6px rgba(0, 0, 0, 0.8),
-          0 0 12px rgba(66, 66, 66, 0.2);
+    0 0 6px rgba(0, 0, 0, 0.8),
+    0 0 12px rgba(66, 66, 66, 0.2);
 }
 
 .points {
