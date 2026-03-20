@@ -1,0 +1,42 @@
+<div class="container vh-100 d-flex flex-column justify-content-center align-items-center">
+
+    <div class="mx-2 my-3">
+        <img src="/images/logo.png" id="logo">
+    </div>
+
+    <form method="POST" autocomplete="on" action="/login" class="w-75 d-flex flex-column align-items-center">
+
+        {{> input
+                type="text"
+                name="domain"
+                placeholder="Enter domain"
+                value="basiasynowczyk.atlassian.net"
+                autocomplete="off"
+                icon="🌐"
+                id="domain"
+        }}
+
+        {{> input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                autocomplete="email"
+                icon="@"
+                id="email"
+        }}
+
+        {{> input
+                type="password"
+                name="password"
+                placeholder="Enter token"
+                autocomplete="current-password"
+                icon="🔑"
+                id="password"
+        }}
+
+        {{> button}}
+
+        {{> loginError error=error}}
+
+    </form>
+</div>

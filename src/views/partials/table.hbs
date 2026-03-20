@@ -1,0 +1,20 @@
+<div class="table-panel {{#if players.length}}active{{/if}}">
+
+    <div class="table-status">
+        {{#if players.length}}
+            {{players.length}} players joined
+        {{else}}
+            Waiting for players...
+        {{/if}}
+    </div>
+
+    <div class="players-grid">
+        {{#each players}}
+            <div class="player-card">
+                <img src="{{avatar}}" alt="{{name}}" />
+                <span>{{name}}</span>
+            </div>
+        {{/each}}
+    </div>
+
+</div>

@@ -1,0 +1,26 @@
+<div class="container" data-init="@get('/game/updates')">
+    <div>
+        {{>header
+                avatar=avatar
+                userName=userName
+        }}
+        <div class="row">
+            <div class="col-7" >
+                <div id="game-state" data-merge="outerHTML" >
+                    {{> table players=players}}
+                </div>
+                <div>
+                    <hr class="text-secondary"/>
+                    <p class="text-secondary text-center fs-5">Pick one card</p>
+                    <div id="cards">
+                        {{#each cards}}
+                            {{> card n=this userName=userName}}
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+            <div class="col-5">
+            </div>
+        </div>
+    </div>
+</div>

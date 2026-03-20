@@ -1,0 +1,64 @@
+import express from "express";
+import session from "express-session";
+import { engine } from "express-handlebars";
+import { login } from "../../../../files to import/controllers/authController.js";
+
+const app = express();
+
+app.engine(
+  "hbs",
+  engine({
+    extname: ".hbs",
+    layoutsDir: "./src/views/layouts",
+    partialsDir: "./src/views/partials",
+    defaultLayout: "main",
+  }),
+);
+app.set("view engine", "hbs");
+app.set("views", "./src/views");
+
+app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  session({
+    secret: "super-secret-key",
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+
+app.get("/", (req, res) => {
+  res.render("main", {
+    title: "Join Planning Poker",
+    name: "Planning Poker",
+    content: "Collaborative planning poker tool for agile teams using Jira.",
+    css: "/css/mainPage.css",
+    error: null,
+  });
+});
+
+app.get("/clear-error", (req, res) => {
+  res.send(`
+        <div id="loginError"></div>
+    `);
+});
+
+app.post("/login", login);
+
+app.get("/game", (req, res) => {
+  const user = req.session.user;
+
+  if (!user) {
+    return res.redirect("/");
+  }
+
+  res.render("game", {
+    userName: user.userName,
+    avatar: user.avatar,
+    cards: [1, 2, 3, 5, 8, 13, 21],
+    players: [],
+    css: "/css/gamePage.css",
+  });
+});
+
+app.listen(8080);
