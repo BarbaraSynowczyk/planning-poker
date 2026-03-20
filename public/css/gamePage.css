@@ -2,11 +2,15 @@ body {
   background-color: #17171e;
 }
 
-#logo_without_title,
-#userImage {
+#logo_without_title {
   max-height: 50px;
   width: auto;
   height: auto;
+}
+
+#userImage {
+  width: 36px;
+  height: 36px;
 }
 
 #btn {

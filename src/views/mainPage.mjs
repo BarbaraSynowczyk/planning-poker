@@ -1,5 +1,5 @@
 export function mainPage(error = "") {
-    return `<!DOCTYPE html>
+  return `<!DOCTYPE html>
     <html>
     <head>
     <title>Planning Poker - Log in</title>
@@ -67,8 +67,8 @@ export function mainPage(error = "") {
 
 <div class="login-error-container">
     ${
-        error
-            ? `
+      error
+        ? `
     <div class="login-error" id="loginError">
         <div class="error-icon">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -80,7 +80,7 @@ export function mainPage(error = "") {
         <div class="error-text">${error}</div>
     </div>
     `
-            : ""
+        : ""
     }
 </div>
          </form>

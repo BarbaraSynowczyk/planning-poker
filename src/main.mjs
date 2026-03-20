@@ -119,13 +119,13 @@ const server = http.createServer(async (req, res) => {
         // ############################# GETTING TASKS, GEN BY AI ##############################
 
         const projectResponse = await fetch(
-            `https://${domain}/rest/api/3/project/search`,
-            {
-              headers: {
-                Authorization: `Basic ${auth}`,
-                Accept: "application/json",
-              },
+          `https://${domain}/rest/api/3/project/search`,
+          {
+            headers: {
+              Authorization: `Basic ${auth}`,
+              Accept: "application/json",
             },
+          },
         );
 
         const projectData = await projectResponse.json();
@@ -166,29 +166,18 @@ const server = http.createServer(async (req, res) => {
               feature: i.fields.parent?.fields?.summary ?? "No Feature",
               featureKey: i.fields.parent?.key ?? null,
               comments:
-                  i.renderedFields?.comment?.comments.map((c) => ({
-                    author: c.author.displayName,
-                    avatar: c.author.avatarUrls["24x24"],
+                i.renderedFields?.comment?.comments.map((c) => ({
+                  author: c.author.displayName,
+                  avatar: Object.values(c.author.avatarUrls)[0],
 
-                    text: c.body || "",
+                  text: c.body || "",
 
-                    created: c.created,
-                  })) ?? [],
-              // comments:
-              //     i.fields.comment?.comments.map((c) => ({
-              //       author: c.author.displayName,
-              //       avatar: c.author.avatarUrls["24x24"],
-              //
-              //       text:  c.body || "",
-              //
-              //       created: c.created
-              //     })) ?? [],
+                  created: c.created,
+                })) ?? [],
             }));
 
             console.log(...tasks);
             allTasks.push(...tasks);
-
-            // console.log(`Tasks for ${p.key}:`, tasks);
           } catch (err) {
             console.error(`Error fetching issues for ${p.key}:`, err);
           }
@@ -196,20 +185,18 @@ const server = http.createServer(async (req, res) => {
 
         async function getIssues(projectKey) {
           const jql = encodeURIComponent(`project=${projectKey}`);
-          //paginacja
 
           const r = await fetch(
-              `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016,parent&expand=renderedFields`,
-              {
-                headers: {
-                  Authorization: `Basic ${auth}`,
-                  Accept: "application/json",
-                },
+            `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,comment,customfield_10016,parent&expand=renderedFields`,
+            {
+              headers: {
+                Authorization: `Basic ${auth}`,
+                Accept: "application/json",
               },
+            },
           );
 
           const data = await r.json();
-          // const comments = data.renderedFields?.comment?.comments || [];
           return data.issues ?? [];
         }
 
@@ -232,13 +219,13 @@ const server = http.createServer(async (req, res) => {
 
           for (const f of filters) {
             const fr = await fetch(
-                `https://${domain}/rest/api/3/filter/${f.id}`,
-                {
-                  headers: {
-                    Authorization: `Basic ${auth}`,
-                    Accept: "application/json",
-                  },
+              `https://${domain}/rest/api/3/filter/${f.id}`,
+              {
+                headers: {
+                  Authorization: `Basic ${auth}`,
+                  Accept: "application/json",
                 },
+              },
             );
 
             const fd = await fr.json();
@@ -257,7 +244,6 @@ const server = http.createServer(async (req, res) => {
         //################################################################################
 
         game.addPlayer(userName);
-        // game.addPlayer(userName);
         game.avatars[userName] = avatar;
 
         res.writeHead(302, {
@@ -279,7 +265,6 @@ const server = http.createServer(async (req, res) => {
   // GAME PAGE
   if (url.pathname === "/game" && req.method === "GET") {
     const userName = url.searchParams.get("userName");
-    // const avatar = game.avatars[userName];
     const session = sessions[userName];
 
     if (!session) {
@@ -289,7 +274,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     const { avatar, accountId, domain, auth, filters, projects, tasks } =
-        session;
+      session;
 
     const projectKey = projects[0].key;
 
@@ -332,16 +317,15 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-
       if (!jql || jql === "ALL") {
         res.writeHead(200, { "Content-Type": "text/html" });
         res.end(
-            moderatorPage(
-                userName,
-                session.avatar,
-                session.filters,
-                session.allTasks
-            )
+          moderatorPage(
+            userName,
+            session.avatar,
+            session.filters,
+            session.allTasks,
+          ),
         );
         return;
       }
@@ -351,13 +335,13 @@ const server = http.createServer(async (req, res) => {
       const encodedJql = encodeURIComponent(jql);
 
       const r = await fetch(
-          `https://${domain}/rest/api/3/search/jql?jql=${encodedJql}&maxResults=100&fields=summary,labels,description,created,updated,comment,customfield_10016,parent&expand=renderedFields`,
-          {
-            headers: {
-              Authorization: `Basic ${auth}`,
-              Accept: "application/json",
-            },
+        `https://${domain}/rest/api/3/search/jql?jql=${encodedJql}&maxResults=100&fields=summary,labels,description,created,updated,comment,customfield_10016,parent&expand=renderedFields`,
+        {
+          headers: {
+            Authorization: `Basic ${auth}`,
+            Accept: "application/json",
           },
+        },
       );
 
       const data = await r.json();
@@ -367,9 +351,6 @@ const server = http.createServer(async (req, res) => {
 
       if (!data.issues) {
         console.error("JIRA ERROR:", data);
-
-        // res.writeHead(200, { "Content-Type": "text/html" });
-        // res.end("<h2>Błąd filtrowania 😅 sprawdź console</h2>");
         return;
       }
 
@@ -384,12 +365,12 @@ const server = http.createServer(async (req, res) => {
         feature: i.fields.parent?.fields?.summary ?? "No Feature",
         featureKey: i.fields.parent?.key ?? null,
         comments:
-            i.renderedFields?.comment?.comments.map((c) => ({
-              author: c.author.displayName,
-              avatar: c.author.avatarUrls["24x24"],
-              text: c.body || "",
-              created: c.created,
-            })) ?? [],
+          i.renderedFields?.comment?.comments.map((c) => ({
+            author: c.author.displayName,
+            avatar: c.author.avatarUrls["24x24"],
+            text: c.body || "",
+            created: c.created,
+          })) ?? [],
       }));
 
       session.tasks = tasks;
@@ -416,21 +397,21 @@ const server = http.createServer(async (req, res) => {
 
   if (url.pathname === "/game/updates") {
     ServerSentEventGenerator.stream(
-        req,
-        res,
-        (stream) => {
-          game.addClient(stream);
+      req,
+      res,
+      (stream) => {
+        game.addClient(stream);
 
-          stream.patchElements(game.renderGameState());
+        stream.patchElements(game.renderGameState());
 
-          req.on("close", () => {
-            game.removeClient(stream);
-            stream.close();
-          });
-        },
-        {
-          keepalive: true,
-        },
+        req.on("close", () => {
+          game.removeClient(stream);
+          stream.close();
+        });
+      },
+      {
+        keepalive: true,
+      },
     );
 
     return;
