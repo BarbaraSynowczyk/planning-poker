@@ -298,10 +298,6 @@ ${estimated
 
 <div class="fs-5 text-light fw-semibold">
 
-
-
-
-
 ${task.key}
 </div>
 

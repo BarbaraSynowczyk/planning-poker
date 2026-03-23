@@ -1,0 +1,25 @@
+<div class="container-fluid" >
+    {{>topbar
+        avatar=avatar
+        userName=userName
+    }}
+    <div class="select-bar rounded-3 my-4">
+        <div
+                class="d-flex align-items-center justify-content-between"
+        >
+            <div class="select-left">
+                {{> moderator/filterBar filters=filters}}
+                {{> moderator/jqlSnippet jql=jql}}
+            </div>
+            <div class="select-right">
+                {{> moderator/sessionLink}}
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid main-layout">
+        <div class="row g-4"  >
+            {{> moderator/kanban/kanban features=features}}
+            {{> moderator/ticketPreview}}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,16 @@
+<div class="jira-dropdown">
+    <button class="jira-dropdown-btn">
+        <span class="selected fs-5">Select Filter</span>
+        <span class="arrow"></span>
+    </button>
+
+    <div class="jira-dropdown-menu">
+        <div class="jira-option">Show all</div>
+
+        {{#each filters}}
+            <div class="jira-option" data-jql="{{jql}}">
+                {{name}}
+            </div>
+        {{/each}}
+    </div>
+</div>
