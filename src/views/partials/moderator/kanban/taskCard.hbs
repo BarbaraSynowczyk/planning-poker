@@ -1,0 +1,20 @@
+<div
+        class="task-card"
+        data-task="{{encode (json this)}}"
+>
+    <div class="fs-5 text-light fw-semibold">
+        {{key}}
+    </div>
+    <div class="my-3 text-light">
+        {{name}}
+    </div>
+    <div class="task-footer">
+        {{#each labels}}
+            <span class="bg-warning tag fw-semibold">{{this}}</span>
+        {{/each}}
+
+        <span class="points">
+            {{storyPoints}}
+        </span>
+    </div>
+</div>

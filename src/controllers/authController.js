@@ -37,9 +37,26 @@ export const login = async (req, res) => {
 
     const data = await response.json();
 
+    const projectResponse = await fetch(
+        `https://${domain}/rest/api/3/project/search`,
+        {
+          headers: {
+            Authorization: `Basic ${auth}`,
+            Accept: "application/json",
+          },
+        }
+    );
+
+    const projectData = await projectResponse.json();
+    const projectKey = projectData.values[0]?.key;
+
     req.session.user = {
       userName: data.displayName,
       avatar: Object.values(data.avatarUrls)[0],
+      accountId: data.accountId,
+      domain,
+      auth,
+      projectKey,
     };
 
     res.redirect("/game");

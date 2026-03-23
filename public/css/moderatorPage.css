@@ -703,3 +703,17 @@ body {
 .row.g-4 {
   align-items: flex-start;
 }
+
+
+.jira-dropdown-menu {
+  display: none;
+}
+
+.jira-dropdown.open .jira-dropdown-menu {
+  display: block;
+}
+
+.story-points{
+  color: #6C757D;
+}
+

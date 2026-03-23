@@ -1,0 +1,11 @@
+<div class="feature-box my-2">
+    <div class="text-secondary fw-semibold fs-5 mb-3">
+        {{featureKey}} {{featureName}}
+    </div>
+    <div class="row g-3">
+
+        {{> moderator/kanban/column tasks=analyze type="analyze"}}
+        {{> moderator/kanban/column tasks=estimate type="estimate"}}
+        {{> moderator/kanban/column tasks=estimated type="estimated"}}
+    </div>
+</div>

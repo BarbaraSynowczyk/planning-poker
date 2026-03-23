@@ -1,0 +1,11 @@
+<div id="kanbanColumn" class="col-12 col-xl-12">
+    <div class="kanban-container">
+
+        {{> moderator/kanban/kanbanHeader}}
+
+        {{#each features}}
+            {{> moderator/kanban/feature this}}
+        {{/each}}
+
+    </div>
+</div>

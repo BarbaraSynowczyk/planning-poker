@@ -169,7 +169,6 @@ const server = http.createServer(async (req, res) => {
                 i.renderedFields?.comment?.comments.map((c) => ({
                   author: c.author.displayName,
                   avatar: Object.values(c.author.avatarUrls)[0],
-
                   text: c.body || "",
 
                   created: c.created,
