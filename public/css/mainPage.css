@@ -94,7 +94,6 @@ input:-webkit-autofill:active {
     0 6px 16px rgba(0, 0, 0, 0.35),
     0 0 12px rgba(255, 70, 70, 0.25);
 
-  animation: errorFade 4s ease forwards;
 }
 
 .error-icon {

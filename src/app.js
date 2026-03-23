@@ -1,7 +1,8 @@
 import express from "express";
 import session from "express-session";
 import { engine } from "express-handlebars";
-import { login } from "../../../../files to import/controllers/authController.js";
+import { login } from "./controllers/authController.js";
+import { isAuthenticated } from "./middleware/requireAuth.js";
 
 const app = express();
 
@@ -37,22 +38,14 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/clear-error", (req, res) => {
-  res.send(`
-        <div id="loginError"></div>
-    `);
-});
-
 app.post("/login", login);
 
-app.get("/game", (req, res) => {
+app.get("/game", isAuthenticated,(req, res) => {
   const user = req.session.user;
 
-  if (!user) {
-    return res.redirect("/");
-  }
-
   res.render("game", {
+
+
     userName: user.userName,
     avatar: user.avatar,
     cards: [1, 2, 3, 5, 8, 13, 21],

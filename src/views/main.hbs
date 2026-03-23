@@ -6,7 +6,7 @@
 
     <form method="POST" autocomplete="on" action="/login" class="w-75 d-flex flex-column align-items-center">
 
-        {{> input
+        {{> login/input
                 type="text"
                 name="domain"
                 placeholder="Enter domain"
@@ -16,7 +16,7 @@
                 id="domain"
         }}
 
-        {{> input
+        {{> login/input
                 type="email"
                 name="email"
                 placeholder="Enter your email"
@@ -25,7 +25,7 @@
                 id="email"
         }}
 
-        {{> input
+        {{> login/input
                 type="password"
                 name="password"
                 placeholder="Enter token"
@@ -34,9 +34,11 @@
                 id="password"
         }}
 
-        {{> button}}
+        <button type="submit" id="btn" class="btn  my-4 text-nowrap text-light fs-5 w-50 d-flex justify-content-center align-items-center gap-2 p-2">
+            <span><img src="/images/jira_logo.png" id="logo_jira"/></span>Login with Jira
+        </button>
 
-        {{> loginError error=error}}
+        {{> login/loginError error=error}}
 
     </form>
 </div>
