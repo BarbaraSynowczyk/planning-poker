@@ -1,13 +1,13 @@
-<div class="container" data-init="@get('/game/updates')">
+<div class="container" id="game-root" data-init="@get('/game/updates')">
     <div>
-        {{>header
+        {{>topbar
                 avatar=avatar
                 userName=userName
         }}
         <div class="row">
             <div class="col-7" >
                 <div id="game-state" data-merge="outerHTML" >
-                    {{> table players=players}}
+                    {{> game/playersTable players=players}}
                 </div>
                 <div>
                     <hr class="text-secondary"/>
