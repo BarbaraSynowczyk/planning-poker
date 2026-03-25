@@ -1,40 +1,44 @@
-<div id="ticketPreview" class="col-12 col-xl-3 ticket-preview" style="display:none;"
-     data-show="selectedTask">
-    <div>
+<div id="ticketPreview" class="col-12 col-xl-3 ticket-preview">
 
-        <button class="close-preview" data-show="selectedTask" id="closePreview">✕</button>
+    <button class="close-preview" id="closePreview">✕</button>
 
-        <h4 class="preview-title">Active ticket preview</h4>
+    <h4 class="preview-title">Active ticket preview</h4>
 
-        <div class="ticket-header">
-            <div class="ticket-id fs-4 fw-semibold" data-text="selectedTask.key"></div>
-
-            <div class="ticket-name fs-6 text-light" data-text="selectedTask.key"></div>
-
-            <span class="ticket-status fw-semibold fs-6"
-                  data-text="selectedTask.status"></span>
+    <div class="ticket-header">
+        <div class="ticket-id fs-4 fw-semibold">
+            {{#if task}}{{task.key}}{{/if}}
         </div>
 
-        <div class="ticket-meta">
-            <div class="ticket-left">
-                <div class="story-points">
-                    <b class="text-secondary fs-6"  data-text="selectedTask.storyPoints + 'Story Points' || 'Story Points'"></b>
-                </div>
-
-                <div class="description-label">
-                    <b class="text-secondary fs-6">Description</b>
-                </div>
-            </div>
-            <div class="ticket-right text-light">
-                <div class="my-2 created"></div>
-                <div class="my-2 updated"></div>
-                <div class="my-2 date"></div>
-            </div>
+        <div class="ticket-name fs-6 text-light">
+            {{#if task}}{{task.name}}{{/if}}
         </div>
 
-        <div class="ticket-description text-secondary" data-html="selectedTask.description || 'No description'"></div>
-
-        <div class="ticket-comments"></div>
-
+        <span class="ticket-status fw-semibold fs-6">
+            {{#if task}}{{task.status}}{{/if}}
+        </span>
     </div>
+
+    <div class="ticket-meta">
+        <div class="ticket-left">
+            <div class="story-points">
+                <b class="text-secondary fs-6">
+                    Story Points:
+                    {{#if task}}
+                        {{#if task.storyPoints}}{{task.storyPoints}}{{else}}-{{/if}}
+                    {{/if}}
+                </b>
+            </div>
+        </div>
+
+        <div class="ticket-right text-light">
+            <div class="my-2 created"></div>
+            <div class="my-2 updated"></div>
+            <div class="my-2 date"></div>
+        </div>
+    </div>
+
+    <div class="ticket-description text-secondary"></div>
+
+    <div class="ticket-comments"></div>
+
 </div>

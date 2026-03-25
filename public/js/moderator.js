@@ -13,6 +13,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const copyBtn = document.getElementById("copySessionBtn");
     const sessionInput = document.getElementById("session-link");
 
+    const root = document.getElementById("game-root");
+    const sessionId = root ? root.dataset.sessionId : null;
+
+
+    const startBtn = document.getElementById("startSessionBtn");
+    const input = document.getElementById("session-link");
+
+
+
+    if (startBtn && input) {
+        startBtn.addEventListener("click", async () => {
+            const res = await fetch("/create-session", {
+                method: "POST",
+            });
+
+            const data = await res.json();
+
+            input.value = window.location.origin + data.link;
+        });
+    }
+
     copyBtn.addEventListener("click", async () => {
         try {
             await navigator.clipboard.writeText(sessionInput.value);
@@ -28,14 +49,57 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.addEventListener("click", (e) => {
-        const card = e.target.closest(".task-card");
-        if (!card) return;
 
-        const task = JSON.parse(
-            decodeURIComponent(card.dataset.task || "{}")
-        );
 
+    // async function generateSessionLink() {
+    //     if (currentSessionLink) return;
+    //
+    //     const res = await fetch("/create-session", {
+    //         method: "POST",
+    //     });
+    //
+    //     const data = await res.json();
+    //     currentSessionLink = window.location.origin + data.link;
+    //
+    //     document.getElementById("session-link").value = currentSessionLink;
+    //
+    //     document
+    //         .querySelector(".session-link-container")
+    //         .classList.add("active");
+    // }
+
+    let currentSessionId = null;
+
+    async function generateSessionLink(task) {
+        if (!currentSessionId) {
+            const res = await fetch("/create-session", {
+                method: "POST",
+            });
+
+            const data = await res.json();
+
+            const link = data.link;
+            currentSessionId = link.split("/").pop();
+
+            const fullLink = window.location.origin + link;
+
+            document.getElementById("session-link").value = fullLink;
+
+            document
+                .querySelector(".session-link-container")
+                .classList.add("active");
+        }
+
+        await fetch(`/session/${currentSessionId}/active-task`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ task }),
+        });
+    }
+
+    function showTaskPreview(task) {
         document.querySelector(".ticket-id").textContent = task.key;
         document.querySelector(".ticket-name").textContent = task.name;
         document.querySelector(".ticket-status").textContent = task.status;
@@ -47,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "Updated: " + timeAgo(task.updated);
 
         document.querySelector(".story-points").innerHTML =
-            "<b>Story Points</b> " + (task.storyPoints || "-"); // 🔥 poprawka
+            "<b>Story Points</b> " + (task.storyPoints || "-");
 
         document.querySelector(".ticket-description").innerHTML =
             task.description || "No description";
@@ -76,6 +140,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
         document.querySelector(".date").textContent =
             "Date: " + (task.dueDate ? formatDate(task.dueDate) : "No due date");
+    }
+
+    document.addEventListener("click", async (e) => {
+        const card = e.target.closest(".task-card");
+        if (!card) return;
+
+        const task = JSON.parse(
+            decodeURIComponent(card.dataset.task || "{}")
+        );
+
+        await generateSessionLink(task);
+
+        if (sessionId) {
+            await fetch(`/session/${sessionId}/active-task`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ task }),
+            });
+        }
+
+        showTaskPreview(task);
 
         preview.style.display = "block";
 

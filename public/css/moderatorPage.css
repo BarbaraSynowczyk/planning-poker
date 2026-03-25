@@ -717,3 +717,12 @@ body {
   color: #6C757D;
 }
 
+.session-link {
+  opacity: 0;
+  transition: 0.2s;
+}
+
+.session-link.active {
+  opacity: 1;
+}
+
