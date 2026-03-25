@@ -122,8 +122,8 @@ export function groupByFeature(tasks) {
     return features;
 }
 
-export function mapFeatures(features) {
-    const mapped = Object.entries(features).map(([name, tasks]) => {
+export function splitFeaturesByEstimationStatus(features) {
+    const kanbanFeatures  = Object.entries(features).map(([name, tasks]) => {
         const analyze = tasks.filter(t => t.labels?.length > 0);
 
         const estimate = tasks.filter(
@@ -141,7 +141,7 @@ export function mapFeatures(features) {
         };
     });
 
-    return mapped.sort((a, b) => {
+    return kanbanFeatures .sort((a, b) => {
         if (a.featureName === "No Feature") return 1;
         if (b.featureName === "No Feature") return -1;
         return 0;

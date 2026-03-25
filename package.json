@@ -17,7 +17,8 @@
     "@starfederation/datastar-sdk": "^1.0.0-RC.3",
     "express": "^5.2.1",
     "express-handlebars": "^8.0.6",
-    "express-session": "^1.19.0"
+    "express-session": "^1.19.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
