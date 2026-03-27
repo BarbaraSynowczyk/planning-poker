@@ -1,0 +1,18 @@
+{{#each comments}}
+    <div class="comment">
+
+        <img src="{{avatar}}" class="comment-avatar" />
+
+        <div class="comment-body">
+            <div class="comment-header">
+                <span class="comment-author">{{author}}</span>
+                <span class="comment-date">{{timeAgo created}}</span>
+            </div>
+
+            <div class="comment-content">
+                {{{text}}}
+            </div>
+        </div>
+
+    </div>
+{{/each}}

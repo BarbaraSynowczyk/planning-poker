@@ -24,7 +24,7 @@ export function gamePage(userName, avatar, gameState = "") {
                     data-user="${userName}" 
                     class="col-auto ms-auto d-flex align-items-center gap-2"><img id="userImage" src="${avatar}" alt="avatar_image"><h5 class="text-secondary m-0">${userName}</h5></div>
                 </div>
-                <div class="row">
+                <div class="row ">
                     <div class="col-7" >
                         <div id="game-state" data-merge="outerHTML" >${gameState}</div>
                         <div>

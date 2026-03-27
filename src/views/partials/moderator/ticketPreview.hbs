@@ -31,14 +31,39 @@
         </div>
 
         <div class="ticket-right text-light">
-            <div class="my-2 created"></div>
-            <div class="my-2 updated"></div>
-            <div class="my-2 date"></div>
+            <div class="my-2 created">
+                <span class="text-white fs-6">Created:</span>
+                {{#if task}}
+                    {{formatDate task.created}}
+                {{/if}}
+            </div>
+            <div class="my-2 updated">
+                <span class="text-white fs-6">Updated:</span>
+                {{#if task}}
+                    {{timeAgo task.updated}}
+                {{/if}}
+            </div>
+            <div class="my-2 date">
+                <span class="text-white fs-6">Date:</span>
+                {{#if task}}
+                    {{#if task.dueDate}}
+                        {{formatDate task.dueDate}}
+                    {{else}}
+                        No due date
+                    {{/if}}
+                {{/if}}
+            </div>
         </div>
     </div>
 
-    <div class="ticket-description text-secondary"></div>
-
-    <div class="ticket-comments"></div>
-
+    <div class="ticket-description text-secondary">
+        {{#if task}}
+            {{#if task.description}}{{{task.description}}}{{else}}No description{{/if}}
+        {{/if}}
+    </div>
+    <div class="ticket-comments">
+        {{#if task}}
+                {{> comment comments=task.comments}}
+        {{/if}}
+    </div>
 </div>

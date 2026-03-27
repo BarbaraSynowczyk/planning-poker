@@ -1,31 +1,46 @@
-<div class="container" data-session-id="{{sessionId}}" id="game-root" data-init="@get('/game/updates')" data-signals='{
-  "selectedTaskId": "{{activeTask.key}}"
-}'>
-    <div>
-        {{>topbar
-                avatar=avatar
-                userName=userName
-        }}
-        <div class="row">
-            <div class="col-7" >
-                <div id="game-state" data-merge="outerHTML" >
+<div class="container-fluid"
+     id="game-root"
+     data-session-id="{{sessionId}}"
+     data-init="@get('/session/{{sessionId}}/events')"
+     data-on:visible="@get('/session/{{sessionId}}/events')"
+>
+    {{>topbar avatar=avatar userName=userName}}
+    <row>
+        {{> timer}}
+    </row>
+    <div class="row game-main-row m-4">
+        <div  class="col-12 col-xl-8 d-flex justify-content-center">
+            <div class="game-center">
+                <div id="game-state" data-merge="outerHTML">
                     {{> game/playersTable players=players}}
                 </div>
-                <div>
-                    <hr class="text-secondary"/>
-                    <p class="text-secondary text-center fs-5">Pick one card</p>
-                    <div id="cards">
-                        {{#each cards}}
-                            {{> card n=this userName=userName}}
-                        {{/each}}
-                    </div>
+
+                <hr class="text-secondary"/>
+
+                <p class="text-secondary text-center fs-5">Pick one card</p>
+
+                <div id="cards">
+                    {{#each cards}}
+                        {{> card n=this userName=userName}}
+                    {{/each}}
                 </div>
             </div>
-            <div class="col-5 d-flex justify-content-center">
-                <div class="preview-wrapper">
-                    {{> moderator/ticketPreview task=activeTask}}
-                </div>
-            </div>
+
         </div>
+
+        <div class="col-12 col-xl-4">
+            <div id="task-container" data-merge="outerHTML">
+                {{#if activeTask}}
+                    {{> game/userTicketPreview  task=session.activeTask}}
+                {{else}}
+                    <div class="text-secondary">No task selected</div>
+                {{/if}}
+            </div>
+
+        </div>
+        <row>
+            <div id="results-container" data-merge="outerHTML"></div>
+        </row>
+
     </div>
 </div>

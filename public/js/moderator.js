@@ -1,11 +1,14 @@
 // TODO: migrate this block to Datastar
 
+
+
 document.addEventListener("DOMContentLoaded", () => {
 
     const dropdown = document.querySelector(".jira-dropdown");
-    const btn = dropdown.querySelector(".jira-dropdown-btn");
-    const selected = dropdown.querySelector(".selected");
-    const options = dropdown.querySelectorAll(".jira-option");
+
+    const btn = dropdown?.querySelector(".jira-dropdown-btn");
+    const selected = dropdown?.querySelector(".selected");
+    const options = dropdown?.querySelectorAll(".jira-option") || [];
     const closeBtn = document.getElementById("closePreview");
     const preview = document.getElementById("ticketPreview");
     const kanban = document.getElementById("kanbanColumn");
@@ -34,39 +37,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    copyBtn.addEventListener("click", async () => {
-        try {
-            await navigator.clipboard.writeText(sessionInput.value);
+    if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(sessionInput.value);
 
-            copyBtn.textContent = "✅ Copied!";
+                copyBtn.textContent = "✅ Copied!";
 
-            setTimeout(() => {
-                copyBtn.innerHTML = `<span class="icon">📋</span> Copy Link`;
-            }, 1500);
+                setTimeout(() => {
+                    copyBtn.innerHTML = `<span class="icon">📋</span> Copy Link`;
+                }, 1500);
 
-        } catch (err) {
-            console.error("Copy failed", err);
-        }
-    });
-
-
-
-    // async function generateSessionLink() {
-    //     if (currentSessionLink) return;
-    //
-    //     const res = await fetch("/create-session", {
-    //         method: "POST",
-    //     });
-    //
-    //     const data = await res.json();
-    //     currentSessionLink = window.location.origin + data.link;
-    //
-    //     document.getElementById("session-link").value = currentSessionLink;
-    //
-    //     document
-    //         .querySelector(".session-link-container")
-    //         .classList.add("active");
-    // }
+            } catch (err) {
+                console.error("Copy failed", err);
+            }
+        });
+    }
 
     let currentSessionId = null;
 
@@ -173,19 +159,23 @@ document.addEventListener("DOMContentLoaded", () => {
         card.classList.add("active");
     });
 
-    closeBtn.addEventListener("click", () => {
-        preview.style.display = "none";
+    if (closeBtn) {
+        closeBtn.addEventListener("click", () => {
+            preview.style.display = "none";
 
-        kanban.classList.remove("col-xl-9");
-        kanban.classList.add("col-xl-12");
+            kanban.classList.remove("col-xl-9");
+            kanban.classList.add("col-xl-12");
 
-        document.querySelectorAll(".task-card").forEach(c => c.classList.remove("active"));
-    });
+            document.querySelectorAll(".task-card").forEach(c => c.classList.remove("active"));
+        });
+    }
 
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle("open");
-    });
+    if (btn && dropdown) {
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle("open");
+        });
+    }
 
     options.forEach((option) => {
         option.addEventListener("click",
@@ -218,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.addEventListener("click", (e) => {
-        if (!dropdown.contains(e.target)) {
+        if (dropdown && !dropdown.contains(e.target)) {
             dropdown.classList.remove("open");
         }
     });
