@@ -78,8 +78,6 @@ export async function getIssues(domain, auth, projectKey) {
         }
     );
 
-
-
     const data = await response.json();
 
     return (data.issues || []).map((i) => ({
@@ -164,6 +162,35 @@ export function calculateTotals(featuresArray) {
         ),
     };
 }
+
+export async function updateStoryPoints(domain, auth, issueKey, points) {
+    const response = await fetch(
+        `https://${domain}/rest/api/3/issue/${issueKey}`,
+        {
+            method: "PUT",
+            headers: {
+                Authorization: `Basic ${auth}`,
+                Accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                fields: {
+                    customfield_10016: Number(points),
+                },
+            }),
+        }
+    );
+
+    if (!response.ok) {
+        const text = await response.text();
+        console.error("Jira update error:", text);
+        throw new Error("Failed to update story points");
+    }
+
+    return true;
+}
+
+
 
 // ####################### GEN BY AI ########################
 

@@ -1,0 +1,53 @@
+<div class="results">
+
+    <div class="results-header">
+        {{votedCount}} / {{totalPlayers}} voted | Median: {{median}}
+    </div>
+
+    <div class="chart-container">
+        <div class="y-axis">
+            {{#each (range 0 maxCount)}}
+                <div
+                        class="y-label"
+                        style="bottom: {{multiply this ../maxCount}}%;">
+                    {{this}}
+                </div>
+            {{/each}}
+        </div>
+        <div class="chart">
+            {{#each chartData}}
+                <div class="bar-wrapper">
+
+                    <div
+                            class="bar {{#if (eq this.count ../maxCount)}}highlight{{/if}}"
+                            data-count="{{this.count}}"
+                            style="height: 0px">
+                    </div>
+                    <div class="bar-label">{{this.value}}</div>
+                </div>
+            {{/each}}
+        </div>
+
+    </div>
+    {{#if isModerator}}
+        {{#if revealed}}
+            <div class="save-estimate">
+                <label class="estimate-label">Final estimate</label>
+
+                <div class="estimate-input-wrapper">
+                    <input
+                            id="estimate-input"
+                            type="number"
+                            value="{{median}}"
+                            class="estimate-input"
+                    />
+                    <span class="estimate-unit">pts</span>
+                </div>
+
+                <button id="save-btn" class="save-btn">
+                    Save to Jira
+                </button>
+            </div>
+        {{/if}}
+    {{/if}}
+</div>
