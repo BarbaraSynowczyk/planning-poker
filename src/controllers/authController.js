@@ -59,7 +59,13 @@ export const login = async (req, res) => {
       projectKey,
     };
 
-    res.redirect("/game");
+    const redirect = req.session.redirectAfterLogin || "/game";
+
+    delete req.session.redirectAfterLogin;
+
+    console.log("REDIRECTING TO:", redirect);
+
+    res.redirect(redirect);
   } catch {
     return res.render("main", {
       title: "Join Planning Poker",

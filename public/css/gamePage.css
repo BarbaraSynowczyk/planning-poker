@@ -290,3 +290,296 @@ body {
 .close-preview:hover {
   color: white;
 }
+
+.game-ticket-preview {
+  background: #2a2f3a;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: none;
+  color: #e6e9ef;
+}
+
+.preview-header {
+  margin-bottom: 10px;
+}
+
+.ticket-id {
+  color: #7c5cff;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.ticket-title {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.ticket-status {
+  background: #6c8ef5;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.preview-body {
+  margin-top: 15px;
+  gap: 20px;
+}
+
+.preview-left {
+  flex: 2;
+}
+
+.preview-right {
+  flex: 1;
+  border-left: 1px solid #3a3f4a;
+  padding-left: 15px;
+  color: #aab0c0;
+  font-size: 14px;
+}
+
+.ticket-description ul {
+  margin-left: 20px;
+}
+
+.ticket-description li {
+  margin-bottom: 5px;
+}
+
+.preview-comments {
+  margin-top: 20px;
+}
+
+.scrollable {
+  overflow-y: auto;
+  max-height: 200px;
+  padding-right: 6px;
+}
+
+.game-ticket-preview {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 80vh;
+}
+.ticket-description {
+  overflow-y: auto;
+  max-height: 180px;
+}
+
+.preview-comments {
+  overflow-y: auto;
+  max-height: 200px;
+  margin-top: 15px;
+}
+.scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+.ticket-description img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.comment {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+
+.comment-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-body {
+  flex: 1;
+  background: #2f3441;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.comment-header {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.comment-author {
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.comment-date {
+  color: #9aa0a6;
+  font-size: 12px;
+}
+
+
+.comment-content {
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.comment-content {
+  word-break: break-word;
+}
+
+html, body {
+  height: 100%;
+}
+
+#game-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-main-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.game-center {
+  max-width: 700px;
+  width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .col-xl-4 {
+    position: sticky;
+    top: 20px;
+  }
+}
+
+.ticket-preview {
+  position: fixed;
+  right: 20px;
+  top: 100px;
+
+  width: 380px;
+}
+
+.game-center {
+  /*margin: 0 auto;*/
+  max-width: 800px;
+}
+
+.game-center {
+  padding: 40px;
+  border-radius: 20px;
+}
+
+#cards {
+  margin-top: 20px;
+}
+
+
+.timer-card {
+  width: 100%;
+  max-width: 700px;
+  background: linear-gradient(180deg, #1c1f2b, #151823);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ROW: zegar + pasek */
+.timer-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* LEFT (ikona + czas) */
+.timer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 80px;
+}
+
+.timer-icon {
+  font-size: 18px;
+  color: #8ea2ff;
+}
+
+.timer-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* BAR */
+.timer-bar {
+  flex: 1;
+  height: 10px;
+  background: #2a2f45;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.timer-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #4c6fff, #7a8cff);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.timer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn.start {
+  background: #3ddc97;
+  color: #06281c;
+}
+
+.btn.start:hover {
+  background: #2ec27e;
+}
+
+.btn.stop {
+  background: #ff5c5c;
+  color: white;
+}
+
+.btn.stop:hover {
+  background: #e54848;
+}
+
+.btn.reveal {
+  background: #2a2f45;
+  color: #cfd6ff;
+}
+
+.btn.reveal:hover {
+  background: #3a4060;
+}
+
+

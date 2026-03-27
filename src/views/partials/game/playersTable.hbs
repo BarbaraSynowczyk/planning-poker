@@ -1,51 +1,35 @@
-<!--<div class="table-panel {{#if players.length}}active{{/if}}">-->
-
-<!--    <div class="table-status text-secondary">-->
-<!--        {{#if players.length}}-->
-<!--            {{players.length}} players joined-->
-<!--        {{else}}-->
-<!--            Waiting for players...-->
-<!--        {{/if}}-->
-<!--    </div>-->
-
-<!--    <div class="players-grid">-->
-
-<!--        {{#each players}}-->
-<!--            <div class="player-card">-->
-
-<!--                <div class="poker-card">-->
-<!--                    {{#if vote}}-->
-<!--                        {{vote}}-->
-<!--                    {{else}}-->
-<!--                        ?-->
-<!--                    {{/if}}-->
-<!--                    <span class="dot"></span>-->
-<!--                </div>-->
-
-<!--                <div class="player-name">-->
-<!--                    {{name}}-->
-<!--                </div>-->
-
-<!--            </div>-->
-<!--        {{/each}}-->
-
-<!--    </div>-->
-
-<!--</div>-->
-
-<div class="table-container" style="--count: {{players.length}}">
+<div class="table-container" data-merge="outerHTML" id="game-state" style="--count: {{players.length}}">
 
     <div class="table-center">
-        Waiting for players votes...
+        {{#if revealed}}
+            Votes revealed
+        {{else}}
+            Waiting for players votes...
+        {{/if}}
     </div>
 
     {{#each players}}
         <div class="player-seat" style="--i: {{@index}}">
-            <div class="poker-card">
-                ?
+
+            <div class="player-card">
+
+                {{#if ../revealed}}
+                    {{this.vote}}
+                {{else}}
+                    {{#if this.vote}}
+                        ✔
+                    {{else}}
+                        ?
+                    {{/if}}
+                {{/if}}
+
                 <span class="dot"></span>
             </div>
-            <div class="player-name text-white my-2">{{name}}</div>
+
+            <div class="player-name text-white my-2">
+                {{this.name}}
+            </div>
+
         </div>
     {{/each}}
 

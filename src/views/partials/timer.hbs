@@ -1,0 +1,33 @@
+<div class="timer-card"
+     id="timer"
+    {{#if timerEnd}}
+         data-end="{{timerEnd}}"
+    {{/if}}
+     data-duration="60000"
+     data-merge="outerHTML">
+
+    <div class="timer-row">
+        <div class="timer-left">
+            <span class="timer-icon">🕒</span>
+            <span class="timer-text" id="timer-text">
+                {{#if remaining}}
+                {{formatTime remaining}}
+            {{else}}
+                00:00
+            {{/if}}</span>
+        </div>
+
+        <div class="timer-bar">
+            <div id="timer-progress" class="timer-progress"></div>
+        </div>
+    </div>
+
+    {{#if isModerator}}
+        <div class="timer-actions">
+            <button class="btn start" onclick="startTimer()">Start</button>
+            <button class="btn stop" onclick="stopTimer()">Stop</button>
+            <button class="btn reveal" onclick="reveal()">Reveal</button>
+        </div>
+    {{/if}}
+
+</div>
