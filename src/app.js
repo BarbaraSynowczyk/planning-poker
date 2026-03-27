@@ -8,9 +8,19 @@ import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 import { v4 as uuidv4 } from "uuid";
 import { formatDate, timeAgo } from "./utils/dataHelpers.js";
 import { broadcast, render } from "./utils/sse.js";
+import handlebars from "handlebars";
+import { updateStoryPoints } from "./services/jiraService.js";
 
 const app = express();
 const sessions = {};
+
+handlebars.registerHelper("range", (from, to) => {
+    const arr = [];
+    for (let i = to; i >= from; i--) {
+        arr.push(i);
+    }
+    return arr;
+});
 
 app.engine(
     "hbs",
@@ -29,7 +39,13 @@ app.engine(
                 const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
                 const secs = String(seconds % 60).padStart(2, "0");
                 return `${mins}:${secs}`;
-            }
+            },
+            eq: (a, b) => a === b,
+            multiply: (a, b) => {
+                if (!b) return 0;
+                return (a / b) * 100;
+            },
+            and: (a, b) => a && b
         },
     }),
 );
@@ -80,8 +96,6 @@ app.get("/session/:id", (req, res) => {
         script: "/js/game.js"
     });
 
-    console.log("EVENTS ACTIVE TASK:", session.activeTask);
-    console.log("SESSION ID:", sessionId);
 });
 
 app.get("/join/:id", (req, res) => {
@@ -139,37 +153,45 @@ app.get("/session/:id/events", (req, res) => {
     const sse = new ServerSentEventGenerator(req, res);
     session.clients.push(sse);
 
-    sse.patchElements(render(session));
-    // broadcast(session);
+    sse.patchElements(render(session, sse.user));
 
     req.on("close", () => {
         session.clients = session.clients.filter(c => c !== sse);
     });
-    // console.log("EVENTS ACTIVE TASK:", session.activeTask);
-    // console.log("SESSION ID:", sessionId);
 });
 
-// app.post("/session/:id/start", (req, res) => {
-//     console.log("🔥 START ENDPOINT HIT")
-//
-//     const { user } = req.session;
-//     const session = sessions[req.params.id];
-//
-//     if (session.moderator !== user.accountId) {
-//         return res.status(403).send("Only moderator");
-//     }
-//
-//     session.votes = {};
-//     session.isVoting = true;
-//     session.revealed = false;
-//     session.timerEnd = Date.now() + 60000;
-//
-//     broadcast(session);
-//
-//     console.log("START TIMER:", session.timerEnd);
-//
-//     res.sendStatus(200);
-// });
+app.post("/session/:id/save-estimate", async (req, res) => {
+    const session = sessions[req.params.id];
+    const user = req.session.user;
+
+    if (!session || !user) {
+        return res.sendStatus(404);
+    }
+
+    if (session.moderator !== user.accountId) {
+        return res.status(403).send("Only moderator");
+    }
+
+    const { value } = req.body;
+
+    if (!session.activeTask) {
+        return res.status(400).send("No active task");
+    }
+
+    try {
+        await updateStoryPoints(
+            user.domain,
+            user.auth,
+            session.activeTask.key,
+            value
+        );
+
+        res.sendStatus(200);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Jira update failed");
+    }
+});
 
 app.post("/session/:id/start", (req, res) => {
     const session = sessions[req.params.id];
@@ -179,7 +201,6 @@ app.post("/session/:id/start", (req, res) => {
     }
 
     if (session.timerEnd) {
-        console.log("⛔ TIMER JUŻ DZIAŁA");
         return res.sendStatus(200);
     }
 
@@ -188,8 +209,6 @@ app.post("/session/:id/start", (req, res) => {
     session.revealed = false;
 
     session.timerEnd = Date.now() + 60000;
-
-    console.log("START TIMER:", session.timerEnd);
 
     broadcast(session);
     res.sendStatus(200);
@@ -211,11 +230,11 @@ app.post("/session/:id/stop", (req, res) => {
 
     session.isVoting = false;
 
-    console.log("STOP at:", session.remaining);
-
     broadcast(session);
     res.sendStatus(200);
 });
+
+// ################################### GEN BY AI ###############################
 
 app.post("/session/:id/vote", (req, res) => {
     const session = sessions[req.params.id];
@@ -231,12 +250,6 @@ app.post("/session/:id/vote", (req, res) => {
     const value = req.query.value;
 
     session.votes[user.accountId] = value;
-    console.log("🧠 VOTES:", session.votes);
-
-    console.log("VOTE:", user.userName, value);
-
-    console.log("USER ID:", user.accountId);
-    console.log("USER NAME:", user.userName);
 
     broadcast(session);
     res.sendStatus(200);
@@ -244,11 +257,23 @@ app.post("/session/:id/vote", (req, res) => {
 
 app.post("/session/:id/reveal", (req, res) => {
     const session = sessions[req.params.id];
+    const user = req.session.user;
+
+    if (!session || !user) {
+        return res.sendStatus(404);
+    }
+
+    if (session.moderator !== user.accountId) {
+        return res.status(403).send("Only moderator");
+    }
+
     session.revealed = true;
 
     broadcast(session);
     res.sendStatus(200);
 });
+
+// ############################################################################
 
 
 app.post("/create-session", (req, res) => {

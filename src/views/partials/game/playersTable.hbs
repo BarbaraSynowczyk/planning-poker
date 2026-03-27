@@ -4,7 +4,11 @@
         {{#if revealed}}
             Votes revealed
         {{else}}
-            Waiting for players votes...
+            {{#unless revealed}}
+                <div class="waiting">
+                    Waiting for votes... ({{notVoted}} left)
+                </div>
+            {{/unless}}
         {{/if}}
     </div>
 
