@@ -235,6 +235,9 @@ app.post("/session/:id/vote", (req, res) => {
 
     console.log("VOTE:", user.userName, value);
 
+    console.log("USER ID:", user.accountId);
+    console.log("USER NAME:", user.userName);
+
     broadcast(session);
     res.sendStatus(200);
 });

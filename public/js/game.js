@@ -56,9 +56,12 @@ window.reveal = function () {
 };
 
 document.addEventListener("click", (e) => {
-    if (e.target.closest(".vote-card")) {
-        console.log("🟢 CLICK CARD:", e.target.innerText);
-    }
+    const card = e.target.closest(".poker-card");
+    if (!card) return;
+
+    const value = card.dataset.value || card.innerText.trim();
+
+    console.log("🟢 CLICK:", value);
 });
 
 document.addEventListener("click", (e) => {
