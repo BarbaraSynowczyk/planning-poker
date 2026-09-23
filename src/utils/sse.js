@@ -70,14 +70,15 @@ const resultsTemplate = handlebars.compile(
 export function broadcast(session) {
     if (!session.clients) return;
 
-    const html = render(session);
-
     session.clients.forEach(client => {
+        const html = render(session, client.sessionUser);
         client.patchElements(html);
     });
 }
 
-export function render(session) {
+export function render(session, user) {
+
+    const isModerator = session.moderator === user.accountId;
 
     const playersWithVotes = session.players.map(p => ({
         ...p,
@@ -156,7 +157,7 @@ export function render(session) {
     const timerHtml = timerTemplate({
         timerEnd: session.timerEnd,
         remaining: session.remaining,
-        isModerator: true
+        isModerator
     });
 
     const resultsHtml = session.revealed
@@ -169,7 +170,7 @@ export function render(session) {
             votedCount,
             totalPlayers,
             revealed: session.revealed,      
-            isModerator: true
+            isModerator
         })}
         </div>
       `

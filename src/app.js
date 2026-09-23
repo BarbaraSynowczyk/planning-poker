@@ -151,9 +151,11 @@ app.get("/session/:id/events", (req, res) => {
     }
 
     const sse = new ServerSentEventGenerator(req, res);
+    sse.sessionUser = user;
+
     session.clients.push(sse);
 
-    sse.patchElements(render(session, sse.user));
+    sse.patchElements(render(session, sse.sessionUser));
 
     req.on("close", () => {
         session.clients = session.clients.filter(c => c !== sse);
