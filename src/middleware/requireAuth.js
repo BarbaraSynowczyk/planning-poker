@@ -1,4 +1,5 @@
 import { isModerator } from "../services/jiraService.js";
+import { logger } from "./logger.js";
 
 export const isAuthenticated = (req, res, next) => {
     if (!req.session.user) {
@@ -29,7 +30,13 @@ export const attachRole = async (req, res, next) => {
 
         next();
     } catch (err) {
-        console.error("attachRole error:", err);
+        logger.error(
+            {
+                requestId: req.requestId,
+                err,
+            },
+            "attachRole error",
+        );
         next(err);
     }
 };

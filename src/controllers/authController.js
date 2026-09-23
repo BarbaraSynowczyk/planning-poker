@@ -1,3 +1,5 @@
+import { logger } from "../middleware/logger.js";
+
 export const login = async (req, res) => {
   const { email, password, domain } = req.body;
 
@@ -63,7 +65,13 @@ export const login = async (req, res) => {
 
     delete req.session.redirectAfterLogin;
 
-    console.log("REDIRECTING TO:", redirect);
+    logger.info(
+        {
+            requestId: req.requestId,
+            redirect,
+        },
+        "Redirecting user",
+    );
 
     res.redirect(redirect);
   } catch {

@@ -3,6 +3,7 @@ import session from "express-session";
 import { engine } from "express-handlebars";
 import { login } from "./controllers/authController.js";
 import { attachRole, isAuthenticated } from "./middleware/requireAuth.js";
+import { logger, requestLogger } from "./middleware/logger.js";
 import { getFilters, getIssues, groupByFeature, splitFeaturesByEstimationStatus, calculateTotals, getIssuesWithJql } from "./services/jiraService.js";
 import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 import { v4 as uuidv4 } from "uuid";
@@ -64,6 +65,7 @@ app.use(
     }),
 );
 
+app.use(requestLogger);
 
 
 app.get("/session/:id", (req, res) => {
@@ -188,7 +190,13 @@ app.post("/session/:id/save-estimate", async (req, res) => {
 
         res.sendStatus(200);
     } catch (err) {
-        console.error(err);
+        logger.error(
+            {
+                requestId: req.requestId,
+                err,
+            },
+            "Jira update failed",
+        );
         res.status(500).send("Jira update failed");
     }
 });
