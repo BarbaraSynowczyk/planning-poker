@@ -1,3 +1,5 @@
+import { getLogger } from "../middleware/logger.js";
+
 export async function isModerator(projectKey, accountId, domain, auth) {
     const r = await fetch(`https://${domain}/rest/api/3/project/${projectKey}`, {
         headers: {
@@ -59,7 +61,7 @@ export async function getFilters(domain, auth) {
         return filtersWithJql;
 
     } catch (err) {
-        console.error("getFilters error:", err);
+        getLogger().error({ err }, "Failed to get filters");
         return [];
     }
 }
@@ -183,9 +185,11 @@ export async function updateStoryPoints(domain, auth, issueKey, points) {
 
     if (!response.ok) {
         const text = await response.text();
-        console.error("Jira update error:", text);
+        getLogger().error({ responseText: text }, "Jira update failed");
         throw new Error("Failed to update story points");
     }
+
+    getLogger().info({issueKey, points: Number(points), statusCode: response.status, },"Jira story points updated");
 
     return true;
 }
