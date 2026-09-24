@@ -1,11 +1,20 @@
 import pino from "pino";
 import { v4 as uuidv4 } from "uuid";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 export const logger = pino();
+
+const asyncLocalStorage = new AsyncLocalStorage();
+
+export const getLogger = () => {
+    return asyncLocalStorage.getStore()?.logger ?? logger;
+};
 
 export const requestLogger = (req, res, next) => {
     const requestId = uuidv4();
     const startTime = process.hrtime.bigint();
+
+    const requestLogger = logger.child({ requestId });
 
     req.requestId = requestId;
 
@@ -13,9 +22,8 @@ export const requestLogger = (req, res, next) => {
         const durationMs =
             Number(process.hrtime.bigint() - startTime) / 1_000_000;
 
-        logger.info(
+        requestLogger.info(
             {
-                requestId,
                 timestamp: new Date().toISOString(),
                 method: req.method,
                 url: req.originalUrl,
@@ -27,5 +35,5 @@ export const requestLogger = (req, res, next) => {
         );
     });
 
-    next();
+    asyncLocalStorage.run({ logger: requestLogger }, next);
 };
