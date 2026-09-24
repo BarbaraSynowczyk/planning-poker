@@ -153,9 +153,11 @@ app.get("/session/:id/events", (req, res) => {
     }
 
     const sse = new ServerSentEventGenerator(req, res);
+    sse.sessionUser = user;
+
     session.clients.push(sse);
 
-    sse.patchElements(render(session, sse.user));
+    sse.patchElements(render(session, sse.sessionUser));
 
     req.on("close", () => {
         session.clients = session.clients.filter(c => c !== sse);
@@ -324,35 +326,31 @@ app.get("/", (req, res) => {
 
 app.post("/login", login);
 
+app.get("/game", isAuthenticated, async (req, res) => {
 
-app.get("/game", isAuthenticated, attachRole, async (req, res) => {
     const { user, currentSessionId } = req.session;
 
     if (currentSessionId && sessions[currentSessionId]) {
         return res.redirect(`/session/${currentSessionId}`);
     }
 
-    if (req.userRole === "moderator") {
-        const filters = await getFilters(user.domain, user.auth);
-        const tasks = await getIssues(user.domain, user.auth, user.projectKey);
+    const filters = await getFilters(user.domain, user.auth);
+    const tasks = await getIssues(user.domain, user.auth, user.projectKey);
 
-        const features = groupByFeature(tasks);
-        const featuresArray = splitFeaturesByEstimationStatus(features);
-        const totals = calculateTotals(featuresArray);
+    const features = groupByFeature(tasks);
+    const featuresArray = splitFeaturesByEstimationStatus(features);
+    const totals = calculateTotals(featuresArray);
 
-        return res.render("moderator", {
-            userName: user.userName,
-            avatar: user.avatar,
-            filters,
-            features: featuresArray,
-            ...totals,
-            jql: `project = ${user.projectKey}`,
-            css: "/css/moderatorPage.css",
-            script: "/js/moderator.js",
-        });
-    }
-
-    return res.send("No session");
+    return res.render("moderator", {
+        userName: user.userName,
+        avatar: user.avatar,
+        filters,
+        features: featuresArray,
+        ...totals,
+        jql: `project = ${user.projectKey}`,
+        css: "/css/moderatorPage.css",
+        script: "/js/moderator.js",
+    });
 });
 
 
