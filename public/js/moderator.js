@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const root = document.getElementById("game-root");
     const sessionId = root ? root.dataset.sessionId : null;
+    let currentJql = "ALL";
 
 
     const startBtn = document.getElementById("startSessionBtn");
@@ -29,6 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
         startBtn.addEventListener("click", async () => {
             const res = await fetch("/create-session", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    jql: currentJql,
+                }),
             });
 
             const data = await res.json();
@@ -60,6 +67,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!currentSessionId) {
             const res = await fetch("/create-session", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    jql: currentJql,
+                }),
             });
 
             const data = await res.json();
@@ -183,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
             async () => {
 
             const jql = option.dataset.jql || "ALL";
+            currentJql = jql;
             selected.textContent = option.textContent;
             dropdown.classList.remove("open");
 

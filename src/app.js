@@ -310,11 +310,13 @@ app.post("/session/:id/reveal", (req, res) => {
 
 app.post("/create-session", async (req, res) => {
     const { user } = req.session;
+    const { jql } = req.body;
     const sessionId = uuidv4();
 
-     const tasks = await getIssues(
+     const tasks = await getIssuesWithJql(
             user.domain,
             user.auth,
+            jql || "ALL",
             user.projectKey
      );
 
@@ -394,6 +396,14 @@ app.post("/filter", async (req, res) => {
         jql,
         user.projectKey
     );
+
+    if (req.session.currentSessionId) {
+        const session = sessions[req.session.currentSessionId];
+
+        if (session) {
+            session.tasks = tasks;
+        }
+    }
 
     const features = groupByFeature(tasks);
     const featuresArray = splitFeaturesByEstimationStatus(features);
