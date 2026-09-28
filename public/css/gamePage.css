@@ -302,7 +302,7 @@ body {
 }
 
 .preview-left {
-  flex: 2;
+  flex: 3;
 }
 
 .preview-right {
@@ -339,7 +339,7 @@ body {
 }
 .ticket-description {
   overflow-y: auto;
-  max-height: 180px;
+  max-height: 260px;
 }
 
 .preview-comments {
@@ -419,9 +419,10 @@ html, body {
 }
 
 .game-main-row {
-  flex: 1;
-  display: flex;
-  align-items: center;
+    flex: 1;
+
+    display: flex;
+    align-items: stretch;
 }
 
 @media (min-width: 1200px) {
@@ -455,6 +456,7 @@ html, body {
 .timer-card {
   width: 100%;
   max-width: 700px;
+  align-self: flex-start;
   background: linear-gradient(180deg, #1c1f2b, #151823);
   padding: 16px;
   border-radius: 16px;
@@ -737,6 +739,44 @@ html, body {
   box-shadow: 0 6px 16px rgba(91,124,255,0.4);
 }
 
+.session-issues {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+
+    flex: 0 0 30%;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.session-issues-column {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.session-issues-column.to-estimate {
+    background: rgba(50, 102, 248, 0.12);
+    border: 1px solid rgba(50, 102, 248, 0.25);
+}
+
+.session-issues-column.estimated {
+    background: rgba(46, 204, 113, 0.12);
+    border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.session-issues-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
 
 .session-issues a {
     display: block;
@@ -813,7 +853,14 @@ html, body {
     height: 18px;
 
     border-radius: 4px;
-    background: #6c8ef5;
+}
 
-    box-shadow: 0 0 10px rgba(108, 142, 245, 0.45);
+.session-issues-column.to-estimate h5::before {
+    background: #3266F8;
+    box-shadow: 0 0 10px rgba(50, 102, 248, 0.45);
+}
+
+.session-issues-column.estimated h5::before {
+    background: #2ECC71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.45);
 }

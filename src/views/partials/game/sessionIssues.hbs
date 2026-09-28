@@ -1,19 +1,28 @@
 <div id="session-issues" class="session-issues" data-merge="outerHTML">
-    <h5>To Estimate</h5>
 
-    {{#each tasksToEstimate}}
-        <a href="https://{{../jiraDomain}}/browse/{{key}}" target="_blank">
-            <span>{{key}}</span>
-            <span>{{name}}</span>
-        </a>
-    {{/each}}
+    <div class="session-issues-column to-estimate">
+        <h5>To Estimate</h5>
 
-    <h5>Estimated</h5>
+        <div class="session-issues-list">
+            {{#each tasksToEstimate}}
+                <a href="https://{{../jiraDomain}}/browse/{{key}}" target="_blank">
+                    <span>{{key}}</span>
+                    <span>{{name}}</span>
+                </a>
+            {{/each}}
+        </div>
+    </div>
+    <div class="session-issues-column estimated">
+        <h5>Estimated</h5>
 
-    {{#each tasksEstimated}}
-        <a href="https://{{../jiraDomain}}/browse/{{key}}" target="_blank">
-            <span>{{key}}</span>
-            <span>{{name}}</span>
-        </a>
-    {{/each}}
+        <div class="session-issues-list">
+            {{#each tasksEstimated}}
+                <a href="https://{{../jiraDomain}}/browse/{{key}}" target="_blank">
+                    <span>{{key}}</span>
+                    <span>{{name}}</span>
+                </a>
+            {{/each}}
+        </div>
+    </div>
+
 </div>
