@@ -85,13 +85,25 @@ app.get("/session/:id", (req, res) => {
 
     const isModerator = session.moderator === user.accountId;
 
+    const tasksToEstimate = session.tasks.filter(
+        task => !task.storyPoints && (!task.labels || task.labels.length === 0)
+    );
+
+    const tasksEstimated = session.tasks.filter(
+        task => task.storyPoints
+    );
+
     res.render("game", {
         sessionId,
+        jiraDomain: user.domain,
         userName: user.userName,
         avatar: user.avatar,
         isModerator,
         players: session.players,
         activeTask: session.activeTask,
+        tasks: session.tasks,
+        tasksToEstimate,
+        tasksEstimated,
         cards: session.cards,
         timerEnd: session.timerEnd,
         css: "/css/gamePage.css",
@@ -190,6 +202,16 @@ app.post("/session/:id/save-estimate", async (req, res) => {
             value
         );
 
+        const task = session.tasks.find(
+            task => task.key === session.activeTask.key
+        );
+
+        if (task) {
+            task.storyPoints = Number(value);
+        }
+
+        broadcast(session);
+
         res.sendStatus(200);
     } catch (err) {
         logger.error(
@@ -286,9 +308,15 @@ app.post("/session/:id/reveal", (req, res) => {
 // ############################################################################
 
 
-app.post("/create-session", (req, res) => {
+app.post("/create-session", async (req, res) => {
     const { user } = req.session;
     const sessionId = uuidv4();
+
+     const tasks = await getIssues(
+            user.domain,
+            user.auth,
+            user.projectKey
+     );
 
     sessions[sessionId] = {
         projectKey: user.projectKey,
@@ -296,6 +324,7 @@ app.post("/create-session", (req, res) => {
         moderator: user.accountId,
         players: [],
         activeTask: null,
+        tasks: tasks,
         cards: [1, 2, 3, 5, 8, 13, 21],
         clients: [],
         votes: {},

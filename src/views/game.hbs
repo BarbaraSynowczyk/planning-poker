@@ -9,7 +9,7 @@
         {{> timer}}
     </row>
     <div class="row game-main-row m-4">
-        <div  class="col-12 col-xl-8 d-flex justify-content-center">
+        <div  class="col-12 col-xl-6 d-flex justify-content-center">
             <div class="game-center">
                 <div id="game-state" data-merge="outerHTML">
                     {{> game/playersTable players=players}}
@@ -28,7 +28,7 @@
 
         </div>
 
-        <div class="col-12 col-xl-4">
+        <div class="col-12 col-xl-6">
             <div id="task-container" data-merge="outerHTML">
                 {{#if activeTask}}
                     {{> game/userTicketPreview  task=session.activeTask}}
@@ -36,6 +36,7 @@
                     <div class="text-secondary">No task selected</div>
                 {{/if}}
             </div>
+            {{> game/sessionIssues}}
 
         </div>
         <row>
