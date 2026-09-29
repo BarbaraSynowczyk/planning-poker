@@ -1,7 +1,3 @@
-// TODO: migrate this block to Datastar
-
-
-
 document.addEventListener("DOMContentLoaded", () => {
 
     const dropdown = document.querySelector(".jira-dropdown");
@@ -15,32 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const copyBtn = document.getElementById("copySessionBtn");
     const sessionInput = document.getElementById("session-link");
 
-//    const root = document.getElementById("game-root");
-//    const sessionId = root ? root.dataset.sessionId : null;
-
-
     const startBtn = document.getElementById("startSessionBtn");
     const input = document.getElementById("session-link");
-
-
-
-//    if (startBtn && input) {
-//        startBtn.addEventListener("click", async () => {
-//            const res = await fetch("/create-session", {
-//                method: "POST",
-//                headers: {
-//                    "Content-Type": "application/json",
-//                },
-//                body: JSON.stringify({
-//                    jql: currentJql,
-//                }),
-//            });
-//
-//            const data = await res.json();
-//
-//            input.value = window.location.origin + data.link;
-//        });
-//    }
 
     if (copyBtn) {
         copyBtn.addEventListener("click", async () => {
@@ -58,39 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
-
-    let currentSessionId = null;
-
-//    async function generateSessionLink(task) {
-//        if (!currentSessionId) {
-//            const res = await fetch("/create-session", {
-//                method: "POST",
-//            });
-//
-//            const data = await res.json();
-//
-//            const link = data.link;
-//            currentSessionId = link.split("/").pop();
-//
-//            const fullLink = window.location.origin + link;
-//
-//            document.getElementById("session-link").value = fullLink;
-//
-//            document
-//                .querySelector(".session-link-container")
-//                .classList.add("active");
-//        }
-//
-//        await fetch(`/session/${currentSessionId}/active-task`, {
-//            method: "POST",
-//            headers: {
-//                "Content-Type": "application/json",
-//            },
-//            body: new URLSearchParams({
-//                    taskKey: task.key,
-//            }),
-//        });
-//    }
 
     function showTaskPreview(task) {
         document.querySelector(".ticket-id").textContent = task.key;
@@ -142,17 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const task = JSON.parse(
             decodeURIComponent(card.dataset.task || "{}")
         );
-
-
-//        if (sessionId) {
-//            await fetch(`/session/${sessionId}/active-task`, {
-//                method: "POST",
-//                headers: {
-//                    "Content-Type": "application/json",
-//                },
-//                body: JSON.stringify({ task }),
-//            });
-//        }
 
         showTaskPreview(task);
 
