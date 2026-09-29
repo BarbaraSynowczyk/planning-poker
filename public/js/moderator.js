@@ -8,7 +8,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const btn = dropdown?.querySelector(".jira-dropdown-btn");
     const selected = dropdown?.querySelector(".selected");
-    const options = dropdown?.querySelectorAll(".jira-option") || [];
     const closeBtn = document.getElementById("closePreview");
     const preview = document.getElementById("ticketPreview");
     const kanban = document.getElementById("kanbanColumn");
@@ -16,9 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const copyBtn = document.getElementById("copySessionBtn");
     const sessionInput = document.getElementById("session-link");
 
-    const root = document.getElementById("game-root");
-    const sessionId = root ? root.dataset.sessionId : null;
-    let currentJql = "ALL";
+//    const root = document.getElementById("game-root");
+//    const sessionId = root ? root.dataset.sessionId : null;
 
 
     const startBtn = document.getElementById("startSessionBtn");
@@ -26,23 +24,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-    if (startBtn && input) {
-        startBtn.addEventListener("click", async () => {
-            const res = await fetch("/create-session", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    jql: currentJql,
-                }),
-            });
-
-            const data = await res.json();
-
-            input.value = window.location.origin + data.link;
-        });
-    }
+//    if (startBtn && input) {
+//        startBtn.addEventListener("click", async () => {
+//            const res = await fetch("/create-session", {
+//                method: "POST",
+//                headers: {
+//                    "Content-Type": "application/json",
+//                },
+//                body: JSON.stringify({
+//                    jql: currentJql,
+//                }),
+//            });
+//
+//            const data = await res.json();
+//
+//            input.value = window.location.origin + data.link;
+//        });
+//    }
 
     if (copyBtn) {
         copyBtn.addEventListener("click", async () => {
@@ -63,40 +61,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let currentSessionId = null;
 
-    async function generateSessionLink(task) {
-        if (!currentSessionId) {
-            const res = await fetch("/create-session", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    jql: currentJql,
-                }),
-            });
-
-            const data = await res.json();
-
-            const link = data.link;
-            currentSessionId = link.split("/").pop();
-
-            const fullLink = window.location.origin + link;
-
-            document.getElementById("session-link").value = fullLink;
-
-            document
-                .querySelector(".session-link-container")
-                .classList.add("active");
-        }
-
-        await fetch(`/session/${currentSessionId}/active-task`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ task }),
-        });
-    }
+//    async function generateSessionLink(task) {
+//        if (!currentSessionId) {
+//            const res = await fetch("/create-session", {
+//                method: "POST",
+//            });
+//
+//            const data = await res.json();
+//
+//            const link = data.link;
+//            currentSessionId = link.split("/").pop();
+//
+//            const fullLink = window.location.origin + link;
+//
+//            document.getElementById("session-link").value = fullLink;
+//
+//            document
+//                .querySelector(".session-link-container")
+//                .classList.add("active");
+//        }
+//
+//        await fetch(`/session/${currentSessionId}/active-task`, {
+//            method: "POST",
+//            headers: {
+//                "Content-Type": "application/json",
+//            },
+//            body: new URLSearchParams({
+//                    taskKey: task.key,
+//            }),
+//        });
+//    }
 
     function showTaskPreview(task) {
         document.querySelector(".ticket-id").textContent = task.key;
@@ -118,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const commentsContainer = document.querySelector(".ticket-comments");
         commentsContainer.innerHTML = "";
 
-        if (task.comments.length === 0) {
+        if (!task.comments || task.comments.length === 0) {
             commentsContainer.innerHTML = `<div class="text-secondary">No comments</div>`;
         } else {
             task.comments.forEach(c => {
@@ -149,17 +143,16 @@ document.addEventListener("DOMContentLoaded", () => {
             decodeURIComponent(card.dataset.task || "{}")
         );
 
-        await generateSessionLink(task);
 
-        if (sessionId) {
-            await fetch(`/session/${sessionId}/active-task`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ task }),
-            });
-        }
+//        if (sessionId) {
+//            await fetch(`/session/${sessionId}/active-task`, {
+//                method: "POST",
+//                headers: {
+//                    "Content-Type": "application/json",
+//                },
+//                body: JSON.stringify({ task }),
+//            });
+//        }
 
         showTaskPreview(task);
 
@@ -190,36 +183,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    options.forEach((option) => {
-        option.addEventListener("click",
-
-            async () => {
-
-            const jql = option.dataset.jql || "ALL";
-            currentJql = jql;
-            selected.textContent = option.textContent;
-            dropdown.classList.remove("open");
-
-            const res = await fetch("/filter", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ jql }),
-            });
-
-            const html = await res.text();
-
-            document.querySelector(".kanban-container").innerHTML = html;
-
-            document.getElementById("jqlCode").textContent = jql;
-            const snippet = document.querySelector(".jql-snippet");
-            const code = document.getElementById("jqlCode");
-
-            code.textContent = jql;
-            snippet.classList.add("active");
-        });
-    });
 
     document.addEventListener("click", (e) => {
         if (dropdown && !dropdown.contains(e.target)) {

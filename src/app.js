@@ -135,7 +135,15 @@ app.post("/session/:id/active-task", (req, res) => {
         return res.status(403).send("Only moderator can change task");
     }
 
-    session.activeTask = req.body.task;
+    const task = session.tasks.find(
+        task => task.key === req.body.taskKey
+    );
+
+    if (!task) {
+        return res.status(404).send("Task not found");
+    }
+
+    session.activeTask = task;
 
     broadcast(session);
 
@@ -310,8 +318,29 @@ app.post("/session/:id/reveal", (req, res) => {
 
 app.post("/create-session", async (req, res) => {
     const { user } = req.session;
-    const { jql } = req.body;
+    const jql = req.session.currentJql || "ALL";
+    const { taskKey } = req.body;
     const sessionId = uuidv4();
+
+    if (req.session.currentSessionId) {
+        const session = sessions[req.session.currentSessionId];
+
+        if (session) {
+            const task = session.tasks.find(
+                task => task.key === taskKey
+            );
+
+            if (task) {
+                session.activeTask = task;
+                broadcast(session);
+            }
+
+            return res.render("partials/moderator/sessionLink", {
+                layout: false,
+                sessionLink: `${req.protocol}://${req.get("host")}/join/${req.session.currentSessionId}`,
+            });
+        }
+    }
 
      const tasks = await getIssuesWithJql(
             user.domain,
@@ -325,7 +354,7 @@ app.post("/create-session", async (req, res) => {
         createdBy: user.userName,
         moderator: user.accountId,
         players: [],
-        activeTask: null,
+        activeTask: tasks.find(task => task.key === taskKey) || null,
         tasks: tasks,
         cards: [1, 2, 3, 5, 8, 13, 21],
         clients: [],
@@ -338,8 +367,12 @@ app.post("/create-session", async (req, res) => {
 
     req.session.currentSessionId = sessionId;
 
-    res.json({
-        link: `/join/${sessionId}`,
+    res.set("datastar-selector", "#session-link-wrapper");
+    res.set("datastar-mode", "inner");
+
+    res.render("partials/moderator/sessionLink", {
+        layout: false,
+        sessionLink: `${req.protocol}://${req.get("host")}/join/${sessionId}`,
     });
 
 });
@@ -389,6 +422,7 @@ app.get("/game", isAuthenticated, async (req, res) => {
 app.post("/filter", async (req, res) => {
     const { user } = req.session;
     const jql = req.body?.jql || "ALL";
+    req.session.currentJql = jql;
 
     const tasks = await getIssuesWithJql(
         user.domain,
