@@ -1,4 +1,4 @@
-FROM node:24-alpine
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
@@ -10,4 +10,11 @@ COPY . .
 
 USER node
 
-CMD ["npm", "start"]
+
+FROM gcr.io/distroless/nodejs24-debian13:nonroot
+
+WORKDIR /app
+
+COPY --from=build /app /app
+
+CMD ["src/app.js"]
