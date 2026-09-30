@@ -448,6 +448,7 @@ app.post("/filter", async (req, res) => {
         layout: false,
         features: featuresArray,
         ...totals,
+        jql,
     });
 });
 

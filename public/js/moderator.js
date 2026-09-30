@@ -1,5 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+
+
+
     const dropdown = document.querySelector(".jira-dropdown");
 
     const btn = dropdown?.querySelector(".jira-dropdown-btn");
@@ -14,6 +17,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const startBtn = document.getElementById("startSessionBtn");
     const input = document.getElementById("session-link");
 
+    document.querySelectorAll(".jira-option").forEach(option => {
+        option.addEventListener("click", () => {
+            const form = option.closest("form");
+            const jql = form.querySelector('input[name="jql"]').value;
+
+            document.getElementById("jqlCode").textContent = jql;
+        });
+    });
     if (copyBtn) {
         copyBtn.addEventListener("click", async () => {
             try {
