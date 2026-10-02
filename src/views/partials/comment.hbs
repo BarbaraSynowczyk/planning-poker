@@ -1,18 +1,16 @@
 {{#each comments}}
-    <div class="comment">
+    <div class="d-flex gap-2 my-3">
+        <img src="{{avatar}}" class="avatar" />
 
-        <img src="{{avatar}}" class="comment-avatar" />
-
-        <div class="comment-body">
-            <div class="comment-header">
+        <div class="comment-bubble text-light">
+            <div class="d-flex justify-content-between">
                 <span class="comment-author">{{author}}</span>
-                <span class="comment-date">{{timeAgo created}}</span>
+                <span class="text-secondary small">{{timeAgo created}}</span>
             </div>
 
-            <div class="comment-content">
+            <div class="mt-1">
                 {{{text}}}
             </div>
         </div>
-
     </div>
 {{/each}}

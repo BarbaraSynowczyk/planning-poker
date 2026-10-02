@@ -1,23 +1,16 @@
-<div id="ticketPreview" class="col-12 col-xl-3 ticket-preview">
-
-    <button class="close-preview" id="closePreview">✕</button>
-
+ <button class="close-preview" id="closePreview">✕</button>
     <h4 class="preview-title">Active ticket preview</h4>
-
     <div class="ticket-header">
         <div class="ticket-id fs-4 fw-semibold">
             {{#if task}}{{task.key}}{{/if}}
         </div>
-
         <div class="ticket-name fs-6 text-light">
             {{#if task}}{{task.name}}{{/if}}
         </div>
-
         <span class="ticket-status fw-semibold fs-6">
             {{#if task}}{{task.status}}{{/if}}
         </span>
     </div>
-
     <div class="ticket-meta">
         <div class="ticket-left">
             <div class="story-points">
@@ -29,19 +22,14 @@
                 </b>
             </div>
         </div>
-
         <div class="ticket-right text-light">
             <div class="my-2 created">
                 <span class="text-white fs-6">Created:</span>
-                {{#if task}}
-                    {{formatDate task.created}}
-                {{/if}}
+                {{#if task}}{{formatDate task.created}}{{/if}}
             </div>
             <div class="my-2 updated">
                 <span class="text-white fs-6">Updated:</span>
-                {{#if task}}
-                    {{timeAgo task.updated}}
-                {{/if}}
+                {{#if task}}{{timeAgo task.updated}}{{/if}}
             </div>
             <div class="my-2 date">
                 <span class="text-white fs-6">Date:</span>
@@ -55,15 +43,17 @@
             </div>
         </div>
     </div>
-
     <div class="ticket-description text-secondary">
         {{#if task}}
-            {{#if task.description}}{{{task.description}}}{{else}}No description{{/if}}
+            {{#if task.description}}
+                {{{task.description}}}
+            {{else}}
+                No description
+            {{/if}}
         {{/if}}
     </div>
     <div class="ticket-comments">
         {{#if task}}
-                {{> comment comments=task.comments}}
+            {{> comment comments=task.comments}}
         {{/if}}
     </div>
-</div>

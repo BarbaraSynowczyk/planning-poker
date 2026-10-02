@@ -19,7 +19,10 @@
     <div class="container-fluid main-layout">
         <div class="row g-4"  >
             {{> moderator/kanban/kanban features=features}}
-            {{> moderator/ticketPreview}}
+
+            <div id="ticketPreview" class="col-12 col-xl-3 ticket-preview">
+                {{> moderator/ticketPreview task=activeTask}}
+            </div>
         </div>
     </div>
 </div>

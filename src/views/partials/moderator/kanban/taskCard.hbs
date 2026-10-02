@@ -1,7 +1,16 @@
 <form
         class="task-card"
-        data-task="{{encode (json this)}}"
-        data-on:click="@post('/create-session', {contentType: 'form'})"
+        data-signals:_previewRequested="false"
+        data-on:click="
+        $_previewRequested = true;
+        @post('/create-session', {contentType: 'form'})
+    "
+        data-on:datastar-fetch="
+    evt.detail.type === 'finished' &&
+    evt.detail.el === el &&
+    $_previewRequested &&
+    ($_previewRequested = false, @get('/task-preview/{{key}}'))
+"
 >
     <input type="hidden" name="taskKey" value="{{key}}">
     <div class="fs-5 text-light fw-semibold">

@@ -334,11 +334,14 @@ app.post("/create-session", async (req, res) => {
                 session.activeTask = task;
                 broadcast(session);
             }
+            res.set("datastar-selector", "#session-link-wrapper");
+            res.set("datastar-mode", "inner");
 
-            return res.render("partials/moderator/sessionLink", {
-                layout: false,
-                sessionLink: `${req.protocol}://${req.get("host")}/join/${req.session.currentSessionId}`,
-            });
+           return res.render("partials/moderator/sessionLink", {
+               layout: false,
+               sessionLink: `${req.protocol}://${req.get("host")}/join/${req.session.currentSessionId}`,
+               task,
+           });
         }
     }
 
@@ -419,6 +422,37 @@ app.get("/game", isAuthenticated, async (req, res) => {
 
 
 // ####################### GEN BY AI ########################
+
+app.get("/task-preview/:taskKey", (req, res) => {
+    const { user } = req.session;
+    const { taskKey } = req.params;
+
+    if (!user || !req.session.currentSessionId) {
+        return res.sendStatus(404);
+    }
+
+    const session = sessions[req.session.currentSessionId];
+
+    if (!session) {
+        return res.sendStatus(404);
+    }
+
+    const task = session.tasks.find(task => task.key === taskKey);
+
+    if (!task) {
+        return res.sendStatus(404);
+    }
+
+    res.set("datastar-selector", "#ticketPreview");
+    res.set("datastar-mode", "inner");
+
+    res.render("partials/moderator/ticketPreview", {
+        layout: false,
+        task,
+    });
+});
+
+
 app.post("/filter", async (req, res) => {
     const { user } = req.session;
     const jql = req.body?.jql || "ALL";

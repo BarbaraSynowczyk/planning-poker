@@ -1,7 +1,6 @@
+// TODO: migrate this block to Datastar
+
 document.addEventListener("DOMContentLoaded", () => {
-
-
-
 
     const dropdown = document.querySelector(".jira-dropdown");
 
@@ -42,58 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function showTaskPreview(task) {
-        document.querySelector(".ticket-id").textContent = task.key;
-        document.querySelector(".ticket-name").textContent = task.name;
-        document.querySelector(".ticket-status").textContent = task.status;
-
-        document.querySelector(".created").textContent =
-            "Created: " + timeAgo(task.created);
-
-        document.querySelector(".updated").textContent =
-            "Updated: " + timeAgo(task.updated);
-
-        document.querySelector(".story-points").innerHTML =
-            "<b>Story Points</b> " + (task.storyPoints || "-");
-
-        document.querySelector(".ticket-description").innerHTML =
-            task.description || "No description";
-
-        const commentsContainer = document.querySelector(".ticket-comments");
-        commentsContainer.innerHTML = "";
-
-        if (!task.comments || task.comments.length === 0) {
-            commentsContainer.innerHTML = `<div class="text-secondary">No comments</div>`;
-        } else {
-            task.comments.forEach(c => {
-                commentsContainer.innerHTML += `
-                <div class="d-flex gap-2 my-3">
-                    <img src="${c.avatar}" class="avatar" />
-                    <div class="comment-bubble text-light">
-                        <div class="d-flex justify-content-between">
-                            <span class="comment-author">${c.author}</span>
-                            <span class="text-secondary small">${c.created}</span>
-                        </div>
-                        <div class="mt-1">${c.text}</div>
-                    </div>
-                </div>
-            `;
-            });
-        }
-
-        document.querySelector(".date").textContent =
-            "Date: " + (task.dueDate ? formatDate(task.dueDate) : "No due date");
-    }
-
-    document.addEventListener("click", async (e) => {
+    document.addEventListener("click", (e) => {
         const card = e.target.closest(".task-card");
         if (!card) return;
-
-        const task = JSON.parse(
-            decodeURIComponent(card.dataset.task || "{}")
-        );
-
-        showTaskPreview(task);
 
         preview.style.display = "block";
 
