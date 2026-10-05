@@ -203,6 +203,48 @@ app.post("/session/:id/save-estimate", async (req, res) => {
     }
 });
 
+app.get("/jira-attachment/:id", async (req, res) => {
+    const { user } = req.session;
+
+    if (!user) {
+        return res.sendStatus(401);
+    }
+
+    try {
+        const response = await fetch(
+            `https://${user.domain}/rest/api/3/attachment/content/${req.params.id}`,
+            {
+                headers: {
+                    Authorization: `Basic ${user.auth}`,
+                },
+            }
+        );
+
+        if (!response.ok) {
+            return res.sendStatus(response.status);
+        }
+
+        res.set(
+            "Content-Type",
+            response.headers.get("content-type") || "application/octet-stream"
+        );
+
+        const buffer = await response.arrayBuffer();
+
+        res.send(Buffer.from(buffer));
+    } catch (err) {
+        logger.error(
+            {
+                requestId: req.requestId,
+                err,
+            },
+            "Jira attachment fetch failed",
+        );
+
+        res.sendStatus(500);
+    }
+});
+
 app.post("/session/:id/start", (req, res) => {
     const session = sessions[req.params.id];
 
