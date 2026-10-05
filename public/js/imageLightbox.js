@@ -13,14 +13,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.addEventListener("click", (event) => {
-        const image = event.target.closest(".ticket-description img");
-
+        const image = event.target.closest(
+            ".ticket-description img, .comment-bubble img, .comment-body img, .comment-content img"
+        );
         if (!image) {
             return;
         }
 
+        const imageContainer = image.closest(
+            ".ticket-description, .comment-bubble, .comment-body, .comment-content, .comment"
+        );
+
         images = Array.from(
-            image.closest(".ticket-description").querySelectorAll("img")
+            imageContainer.querySelectorAll("img")
         );
 
         currentImageIndex = images.indexOf(image);
