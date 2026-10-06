@@ -52,13 +52,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
      document.addEventListener("keydown", (event) => {
+         if (!lightbox.classList.contains("active")) {
+             return;
+         }
+
          if (event.key === "Escape") {
              lightbox.classList.remove("active");
              lightboxImage.src = "";
          }
+
+         if (event.key === "ArrowRight") {
+             event.preventDefault();
+             nextButton.click();
+         }
+
+         if (event.key === "ArrowLeft") {
+             event.preventDefault();
+             prevButton.click();
+         }
      });
 
      nextButton.addEventListener("click", () => {
+
          if (images.length <= 1) {
              return;
          }

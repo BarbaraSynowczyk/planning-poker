@@ -66,7 +66,19 @@ export async function getFilters(domain, auth) {
     }
 }
 
+function replaceAttachmentUrls(html, domain) {
+    const attachmentPrefix =
+        `https://${domain}/rest/api/3/attachment/content/`;
+
+    return html.replaceAll(
+        attachmentPrefix,
+        "/jira-attachment/"
+    );
+}
+
+
 export async function getIssues(domain, auth, projectKey) {
+
     const jql = encodeURIComponent(`project = ${projectKey}`);
 
     const response = await fetch(
@@ -91,9 +103,9 @@ export async function getIssues(domain, auth, projectKey) {
         assignee: i.fields?.assignee?.displayName || "Unassigned",
         reporter: i.fields?.reporter?.displayName || "Unknown",
         labels: i.fields?.labels || [],
-        description: (i.renderedFields?.description || "").replace(
-            /https:\/\/[^/]+\/rest\/api\/3\/attachment\/content\/(\d+)/g,
-            "/jira-attachment/$1"
+        description: replaceAttachmentUrls(
+            i.renderedFields?.description || "",
+            domain
         ),
         created: i.fields?.created || "",
         updated: i.fields?.updated || "",
@@ -103,10 +115,10 @@ export async function getIssues(domain, auth, projectKey) {
             i.renderedFields?.comment?.comments?.map((c) => ({
                 author: c.author?.displayName || "Unknown",
                 avatar: Object.values(c.author?.avatarUrls || {})[0],
-                text: (c.body || "").replace(
-                                   /https:\/\/[^/]+\/rest\/api\/3\/attachment\/content\/(\d+)/g,
-                                   "/jira-attachment/$1"
-                                ),
+                text: replaceAttachmentUrls(
+                    c.body || "",
+                    domain
+                ),
                 created: c.created || "",
             })) || [],
     }));
@@ -233,10 +245,10 @@ export async function getIssuesWithJql(domain, auth, jql, projectKey) {
         assignee: i.fields?.assignee?.displayName || "Unassigned",
         reporter: i.fields?.reporter?.displayName || "Unknown",
         labels: i.fields?.labels || [],
-        description: (i.renderedFields?.description || "").replace(
-                         /https:\/\/[^/]+\/rest\/api\/3\/attachment\/content\/(\d+)/g,
-                         "/jira-attachment/$1"
-                     ),
+        description: replaceAttachmentUrls(
+            i.renderedFields?.description || "",
+            domain
+        ),
         created: i.fields?.created || "",
         updated: i.fields?.updated || "",
         feature: i.fields?.parent?.fields?.summary || "No Feature",
@@ -245,9 +257,9 @@ export async function getIssuesWithJql(domain, auth, jql, projectKey) {
             i.renderedFields?.comment?.comments?.map((c) => ({
                 author: c.author?.displayName || "Unknown",
                 avatar: Object.values(c.author?.avatarUrls || {})[0],
-                text: (c.body || "").replace(
-                   /https:\/\/[^/]+\/rest\/api\/3\/attachment\/content\/(\d+)/g,
-                   "/jira-attachment/$1"
+                text: replaceAttachmentUrls(
+                    c.body || "",
+                    domain
                 ),
                 created: c.created || "",
             })) || [],
