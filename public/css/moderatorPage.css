@@ -146,6 +146,12 @@ body {
 
   color: #e5e7eb;
 
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+
   cursor: pointer;
 
   transition: 0.15s;
@@ -406,28 +412,50 @@ body {
   min-width: 120px;
 }
 
-.ticket-comment {
+.comment {
   display: flex;
-  align-items: center;
   gap: 10px;
+  margin-bottom: 14px;
+  align-items: flex-start;
 }
 
-.avatar {
+.comment-avatar {
   width: 36px;
   height: 36px;
   border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-.comment-bubble {
-  background: #2a2f3f;
-  padding: 8px 12px;
-  border-radius: 10px;
+.comment-body {
+  color: #e6e9ef;
+  flex: 1;
+  background: #2f3441;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.comment-header {
+  font-size: 13px;
+  margin-bottom: 4px;
 }
 
 .comment-author {
-  color: #60a5fa;
+  font-weight: 600;
   margin-right: 6px;
 }
+
+.comment-date {
+  color: #9aa0a6;
+  font-size: 12px;
+}
+
+.comment-content {
+  font-size: 14px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
 
 .description-label {
   margin-top: 35px;
@@ -682,24 +710,8 @@ body {
   margin-left: 0;
   display: flex;
   align-items: center;
-  display: none;
-}
-
-.jql-snippet.active {
-  display: flex;
-}
-
-.jql-snippet {
-  display: none;
-  opacity: 0;
-  transform: translateX(-10px);
-}
-
-.jql-snippet.active {
-  display: flex;
   opacity: 1;
   transform: translateX(0);
-  transition: all 0.2s ease;
 }
 
 .row.g-4 {

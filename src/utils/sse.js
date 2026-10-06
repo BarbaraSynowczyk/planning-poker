@@ -67,6 +67,13 @@ const resultsTemplate = handlebars.compile(
     fs.readFileSync(path.resolve("src/views/partials/game/results.hbs"), "utf-8")
 );
 
+const sessionIssuesTemplate = handlebars.compile(
+    fs.readFileSync(
+        path.resolve("src/views/partials/game/sessionIssues.hbs"),
+        "utf-8"
+    )
+);
+
 export function broadcast(session) {
     if (!session.clients) return;
 
@@ -176,10 +183,25 @@ export function render(session, user) {
       `
         : `<div id="results-container" data-merge="outerHTML"></div>`;
 
+    const tasksToEstimate = session.tasks.filter(
+       task => !task.storyPoints && (!task.labels || task.labels.length === 0)
+    );
+
+    const tasksEstimated = session.tasks.filter(
+       task => task.storyPoints
+    );
+
+    const sessionIssuesHtml = sessionIssuesTemplate({
+        tasksToEstimate,
+        tasksEstimated,
+        jiraDomain: user.domain
+    });
+
     return `
         ${timerHtml}
         ${playersHtml}
         ${taskHtml}
+        ${sessionIssuesHtml}
         ${resultsHtml}
     `;
 }

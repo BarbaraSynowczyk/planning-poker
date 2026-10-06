@@ -5,11 +5,12 @@
      data-on:visible="@get('/session/{{sessionId}}/events')"
 >
     {{>topbar avatar=avatar userName=userName}}
-    <row>
-        {{> timer}}
-    </row>
+
     <div class="row game-main-row m-4">
-        <div  class="col-12 col-xl-8 d-flex justify-content-center">
+        <div class="col-12 col-xl-6 d-flex flex-column align-items-center">
+
+            {{> timer}}
+
             <div class="game-center">
                 <div id="game-state" data-merge="outerHTML">
                     {{> game/playersTable players=players}}
@@ -27,17 +28,20 @@
             </div>
 
         </div>
+        <div class="col-12 col-xl-6 align-self-stretch d-flex flex-column h-100">
 
-        <div class="col-12 col-xl-4">
             <div id="task-container" data-merge="outerHTML">
                 {{#if activeTask}}
-                    {{> game/userTicketPreview  task=session.activeTask}}
+                    {{> game/userTicketPreview task=activeTask}}
                 {{else}}
                     <div class="text-secondary">No task selected</div>
                 {{/if}}
             </div>
 
+            {{> game/sessionIssues}}
+
         </div>
+
         <row>
             <div id="results-container" data-merge="outerHTML"></div>
         </row>

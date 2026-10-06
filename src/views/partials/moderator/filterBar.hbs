@@ -5,12 +5,16 @@
     </button>
 
     <div class="jira-dropdown-menu">
-        <div class="jira-option">Show all</div>
+        <form data-on:submit="@post('/filter', {contentType: 'form'})">
+            <input type="hidden" name="jql" value="ALL">
+            <button type="submit" class="jira-option">Show all</button>
+        </form>
 
         {{#each filters}}
-            <div class="jira-option" data-jql="{{jql}}">
-                {{name}}
-            </div>
+            <form data-on:submit="@post('/filter', {contentType: 'form'})">
+                <input type="hidden" name="jql" value="{{jql}}">
+                <button type="submit" class="jira-option">{{name}}</button>
+            </form>
         {{/each}}
     </div>
 </div>

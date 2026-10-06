@@ -304,7 +304,7 @@ body {
 }
 
 .preview-left {
-  flex: 2;
+  flex: 3;
 }
 
 .preview-right {
@@ -341,7 +341,7 @@ body {
 }
 .ticket-description {
   overflow-y: auto;
-  max-height: 180px;
+  max-height: 260px;
 }
 
 .preview-comments {
@@ -421,9 +421,10 @@ html, body {
 }
 
 .game-main-row {
-  flex: 1;
-  display: flex;
-  align-items: center;
+    flex: 1;
+
+    display: flex;
+    align-items: stretch;
 }
 
 @media (min-width: 1200px) {
@@ -457,6 +458,7 @@ html, body {
 .timer-card {
   width: 100%;
   max-width: 700px;
+  align-self: flex-start;
   background: linear-gradient(180deg, #1c1f2b, #151823);
   padding: 16px;
   border-radius: 16px;
@@ -737,4 +739,130 @@ html, body {
 .save-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(91,124,255,0.4);
+}
+
+.session-issues {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+
+    flex: 0 0 30%;
+    height: auto;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.session-issues-column {
+    min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.session-issues-column.to-estimate {
+    background: rgba(50, 102, 248, 0.12);
+    border: 1px solid rgba(50, 102, 248, 0.25);
+}
+
+.session-issues-column.estimated {
+    background: rgba(46, 204, 113, 0.12);
+    border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.session-issues-list {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.session-issues a {
+    display: block;
+    position: relative;
+
+    padding: 12px 14px;
+    margin-bottom: 10px;
+
+    background: linear-gradient(
+        145deg,
+        #232735,
+        #1b1e29
+    );
+
+    border: 1px solid #30374a;
+    border-radius: 12px;
+
+    color: #e6e9ef;
+    text-decoration: none;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.25),
+        inset 0 1px 1px rgba(255, 255, 255, 0.04);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease;
+}
+
+.session-issues a:hover {
+    transform: translateY(-2px);
+
+    background: linear-gradient(
+        145deg,
+        #2a3041,
+        #202432
+    );
+
+    border-color: #6c8ef5;
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.4),
+        0 0 12px rgba(108, 142, 245, 0.12);
+}
+
+.session-issues a span:first-child {
+    display: inline-block;
+
+    color: #8ea2ff;
+    font-weight: 700;
+
+    margin-right: 7px;
+}
+
+.session-issues h5 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 18px 0 10px;
+
+    color: #d6dcff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.session-issues h5::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+
+    border-radius: 4px;
+}
+
+.session-issues-column.to-estimate h5::before {
+    background: #3266F8;
+    box-shadow: 0 0 10px rgba(50, 102, 248, 0.45);
+}
+
+.session-issues-column.estimated h5::before {
+    background: #2ECC71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.45);
 }
