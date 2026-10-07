@@ -2,6 +2,7 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
+
     const dropdown = document.querySelector(".jira-dropdown");
 
     const btn = dropdown?.querySelector(".jira-dropdown-btn");

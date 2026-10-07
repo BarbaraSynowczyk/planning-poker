@@ -1,5 +1,6 @@
 @import url("/css/imageLightbox.css");
 @import url("/css/scrollbar.css");
+@import url("/css/featurePagination.css");
 
 body {
   background-color: #17171e;

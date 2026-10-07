@@ -1,0 +1,29 @@
+.feature-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.feature-pagination button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #3b4052;
+    color: white;
+    cursor: pointer;
+}
+
+.feature-pagination button:hover {
+    background: #5b6380;
+}
+
+.feature-pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.feature-pagination span {
+    color: white;
+}
