@@ -253,12 +253,22 @@ body {
 
 .kanban-column {
   padding: 15px;
-  /*border-left: 1px solid rgba(255, 255, 255, 0.05);*/
 
   box-shadow:
     0 0 6px rgba(0, 0, 0, 0.8),
     0 0 12px rgba(66, 66, 66, 0.2);
-  min-height: 200px;
+
+  height: 472px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.kanban-column {
+  scrollbar-width: none;
+}
+
+.kanban-column::-webkit-scrollbar {
+  display: none;
 }
 
 .kanban-column:first-child {
