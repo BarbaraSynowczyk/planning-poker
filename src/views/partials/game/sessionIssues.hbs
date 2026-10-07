@@ -3,7 +3,7 @@
     <div class="session-issues-column to-estimate">
         <h5>To Estimate</h5>
 
-        <div class="session-issues-list">
+        <div class="session-issues-list custom-scrollbar">
             {{#each tasksToEstimate}}
                 <a href="https://{{../jiraDomain}}/browse/{{key}}" target="_blank">
                     <span>{{key}}</span>
@@ -15,7 +15,7 @@
     <div class="session-issues-column estimated">
         <h5>Estimated</h5>
 
-        <div class="session-issues-list">
+        <div class="session-issues-list custom-scrollbar">
             {{#each tasksEstimated}}
                 <a href="https://{{../jiraDomain}}/browse/{{key}}" target="_blank">
                     <span>{{key}}</span>

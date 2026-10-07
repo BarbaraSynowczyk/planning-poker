@@ -401,7 +401,7 @@ app.post("/create-session", async (req, res) => {
         players: [],
         activeTask: tasks.find(task => task.key === taskKey) || null,
         tasks: tasks,
-        cards: [1, 2, 3, 5, 8, 13, 21],
+        cards: [1, 2, 3, 5, 8, 13, 21, "coffee", "question"],
         clients: [],
         votes: {},
         isVoting: false,
@@ -448,13 +448,21 @@ app.get("/game", isAuthenticated, async (req, res) => {
 
     const features = groupByFeature(tasks);
     const featuresArray = splitFeaturesByEstimationStatus(features);
+
+    const itemsPerPage = 3;
+    const page = 1;
+    const totalPages = Math.ceil(featuresArray.length / itemsPerPage);
+    const paginatedFeatures = featuresArray.slice(0, itemsPerPage);
+
     const totals = calculateTotals(featuresArray);
 
     return res.render("moderator", {
         userName: user.userName,
         avatar: user.avatar,
         filters,
-        features: featuresArray,
+        features: paginatedFeatures,
+        page,
+        totalPages,
         ...totals,
         jql: `project = ${user.projectKey}`,
         css: "/css/moderatorPage.css",
@@ -498,6 +506,7 @@ app.get("/task-preview/:taskKey", (req, res) => {
 app.post("/filter", async (req, res) => {
     const { user } = req.session;
     const jql = req.body?.jql || "ALL";
+    const page = Number(req.body?.page) || 1;
     req.session.currentJql = jql;
 
     const tasks = await getIssuesWithJql(
@@ -518,13 +527,23 @@ app.post("/filter", async (req, res) => {
     const features = groupByFeature(tasks);
     const featuresArray = splitFeaturesByEstimationStatus(features);
 
+    const itemsPerPage = 3;
+    const totalPages = Math.ceil(featuresArray.length / itemsPerPage);
+
+    const start = (page - 1) * itemsPerPage;
+    const paginatedFeatures = featuresArray.slice(start, start + itemsPerPage);
+
     const totals = calculateTotals(featuresArray);
+
+    console.log("PAGINATION:", page, totalPages);
 
     res.render("partials/moderator/kanban/kanban", {
         layout: false,
-        features: featuresArray,
+        features: paginatedFeatures,
         ...totals,
         jql,
+        page,
+        totalPages,
     });
 });
 

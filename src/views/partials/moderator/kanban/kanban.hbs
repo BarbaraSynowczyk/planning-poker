@@ -1,11 +1,21 @@
 <div id="kanbanColumn" class="col-12 col-xl-12">
     <div class="kanban-container">
-
         {{> moderator/kanban/kanbanHeader}}
-
         {{#each features}}
             {{> moderator/kanban/feature this}}
         {{/each}}
-
+        <div class="feature-pagination">
+            <form data-on:submit="@post('/filter', {contentType: 'form'})">
+                <input type="hidden" name="jql" value="{{jql}}">
+                <input type="hidden" name="page" value="1">
+                <button type="submit" {{#if (eq page 1)}}disabled{{/if}}>← Previous</button>
+            </form>
+            <span>{{page}} / {{totalPages}}</span>
+            <form data-on:submit="@post('/filter', {contentType: 'form'})">
+                <input type="hidden" name="jql" value="{{jql}}">
+                <input type="hidden" name="page" value="2">
+                <button type="submit" {{#if (eq page totalPages)}}disabled{{/if}}>Next →</button>
+            </form>
+        </div>
     </div>
 </div>
