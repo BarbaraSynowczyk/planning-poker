@@ -747,8 +747,7 @@ html, body {
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 
-    flex: 0 0 30%;
-    height: auto;
+    height: 350px;
     min-height: 0;
     overflow: hidden;
 }
@@ -778,6 +777,7 @@ html, body {
     flex: 1;
     overflow-y: auto;
     min-height: 0;
+    padding-right: 8px;
 }
 
 .session-issues a {
@@ -865,4 +865,21 @@ html, body {
 .session-issues-column.estimated h5::before {
     background: #2ECC71;
     box-shadow: 0 0 10px rgba(46, 204, 113, 0.45);
+}
+
+.session-issues-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.session-issues-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.session-issues-list::-webkit-scrollbar-thumb {
+    background: #3b4052;
+    border-radius: 10px;
+}
+
+.session-issues-list::-webkit-scrollbar-thumb:hover {
+    background: #5b6380;
 }
