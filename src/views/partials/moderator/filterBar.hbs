@@ -4,7 +4,7 @@
         <span class="arrow"></span>
     </button>
 
-    <div class="jira-dropdown-menu">
+    <div class="jira-dropdown-menu custom-scrollbar">
         <form data-on:submit="@post('/filter', {contentType: 'form'})">
             <input type="hidden" name="jql" value="ALL">
             <button type="submit" class="jira-option">Show all</button>
