@@ -401,7 +401,7 @@ app.post("/create-session", async (req, res) => {
         players: [],
         activeTask: tasks.find(task => task.key === taskKey) || null,
         tasks: tasks,
-        cards: [1, 2, 3, 5, 8, 13, 21],
+        cards: [1, 2, 3, 5, 8, 13, 21, "coffee", "question"],
         clients: [],
         votes: {},
         isVoting: false,

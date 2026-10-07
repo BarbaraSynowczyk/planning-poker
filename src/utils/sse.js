@@ -104,9 +104,11 @@ export function render(session, user) {
 
     const cards = session.cards || [];
 
-    const chartData = cards.map(card => ({
-        value: card,
-        count: voteCounts[card] || 0
+    const chartData = cards
+        .filter(card => typeof card === "number")
+        .map(card => ({
+            value: card,
+            count: voteCounts[card] || 0
     }));
 
     const counts = chartData.map(c => c.count);
@@ -133,13 +135,15 @@ export function render(session, user) {
             avg = (sorted[mid - 1] + sorted[mid]) / 2;
         }
 
-        median = session.cards.reduce((closest, card) => {
-            if (Math.abs(card - avg) === Math.abs(closest - avg)) {
-                return card > closest ? card : closest;
-            }
-            return Math.abs(card - avg) < Math.abs(closest - avg)
-                ? card
-                : closest;
+        median = session.cards
+            .filter(card => typeof card === "number")
+            .reduce((closest, card) => {
+                if (Math.abs(card - avg) === Math.abs(closest - avg)) {
+                    return card > closest ? card : closest;
+                }
+                return Math.abs(card - avg) < Math.abs(closest - avg)
+                    ? card
+                    : closest;
         });
     }
 
@@ -176,7 +180,7 @@ export function render(session, user) {
             median,
             votedCount,
             totalPlayers,
-            revealed: session.revealed,      
+            revealed: session.revealed,
             isModerator
         })}
         </div>
