@@ -11,9 +11,6 @@ import { formatDate, timeAgo } from "./utils/dataHelpers.js";
 import { broadcast, render } from "./utils/sse.js";
 import handlebars from "handlebars";
 import { updateStoryPoints } from "./services/jiraService.js";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const app = express();
 const sessions = {};
