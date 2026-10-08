@@ -28,7 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (copyBtn) {
         copyBtn.addEventListener("click", async () => {
             try {
-                await navigator.clipboard.writeText(sessionInput.value);
+                const link = new URL(sessionInput.value, window.location.origin).href;
+                await navigator.clipboard.writeText(link);
 
                 copyBtn.textContent = "✅ Copied!";
 
