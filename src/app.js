@@ -11,6 +11,9 @@ import { formatDate, timeAgo } from "./utils/dataHelpers.js";
 import { broadcast, render } from "./utils/sse.js";
 import handlebars from "handlebars";
 import { updateStoryPoints } from "./services/jiraService.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const sessions = {};
@@ -428,6 +431,7 @@ app.get("/", (req, res) => {
     title: "Join Planning Poker",
     name: "Planning Poker",
     content: "Collaborative planning poker tool for agile teams using Jira.",
+    jiraDefaultDomain: process.env.LOGIN_FORM_JIRA_DEFAULT_DOMAIN,
     css: "/css/mainPage.css",
     error: null,
   });
