@@ -428,6 +428,7 @@ app.get("/", (req, res) => {
     title: "Join Planning Poker",
     name: "Planning Poker",
     content: "Collaborative planning poker tool for agile teams using Jira.",
+    jiraDefaultDomain: process.env.LOGIN_FORM_JIRA_DEFAULT_DOMAIN,
     css: "/css/mainPage.css",
     error: null,
   });
