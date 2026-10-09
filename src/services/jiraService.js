@@ -57,7 +57,7 @@ export async function getFilters(domain, auth) {
 
     return filtersWithJql;
   } catch (err) {
-    getLogger().error({ err }, "Failed to get filters");
+    getLogger().error("Failed to get filters");
     return [];
   }
 }
@@ -183,8 +183,7 @@ export async function updateStoryPoints(domain, auth, issueKey, points) {
   );
 
   if (!response.ok) {
-    const text = await response.text();
-    getLogger().error({ responseText: text }, "Jira update failed");
+    getLogger().error({ statusCode: response.status }, "Jira update failed");
     throw new Error("Failed to update story points");
   }
 

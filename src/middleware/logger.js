@@ -25,8 +25,8 @@ export const requestLogger = (req, res, next) => {
       {
         timestamp: new Date().toISOString(),
         method: req.method,
-        url: req.originalUrl,
-        user: req.session?.user?.userName ?? null,
+        url: req.path,
+        userId: req.session?.user?.accountId ?? null,
         durationMs: Math.round(durationMs),
         statusCode: res.statusCode,
       },
