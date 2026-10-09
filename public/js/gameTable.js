@@ -10,65 +10,6 @@
         "Finley Lewis", "Rowan Walker", "Emerson Hall", "Harper Young"
     ];
 
-//    function arrangePlayers(table) {
-//        const players = [...table.querySelectorAll(".player-seat")];
-//        const count = players.length;
-//
-//        if (count === 0) {
-//            table.style.height = "360px";
-//            return;
-//        }
-//
-//
-//
-//        const isMobile = window.innerWidth <= 575.98;
-//        const isMediumGroup = count >= 6 && count < 12;
-//        const isLargeGroup = count >= 12;
-//
-//        const seatWidth = isMobile
-//            ? (isLargeGroup ? 58 : isMediumGroup ? 68 : 76)
-//            : (isLargeGroup ? 76 : isMediumGroup ? 88 : 100);
-//
-//        const seatHeight = isMobile
-//            ? (isLargeGroup ? 78 : isMediumGroup ? 88 : 100)
-//            : (isLargeGroup ? 100 : isMediumGroup ? 110 : 125);
-//
-//        table.classList.toggle("medium-group", isMediumGroup);
-//        table.classList.toggle("large-group", isLargeGroup);
-//
-//
-//
-//        // The table grows vertically instead of squeezing players together.
-//        const tableWidth = table.clientWidth;
-//        const tableHeight = Math.max(
-//            420,
-//            220 + count * (isMobile ? 27 : 25)
-//        );
-//
-//        table.style.height = `${tableHeight}px`;
-//
-//        // Keep seats inside the table and leave room for the central message.
-//        const radiusX = Math.max(
-//            seatWidth,
-//            tableWidth / 2 - seatWidth / 2 - 12
-//        );
-//
-//        const radiusY = Math.max(
-//            150,
-//            tableHeight / 2 - seatHeight / 2 - 12
-//        );
-//
-//        players.forEach((player, index) => {
-//            const angle = (2 * Math.PI * index / count) - Math.PI / 2;
-//
-//            const x = Math.cos(angle) * radiusX;
-//            const y = Math.sin(angle) * radiusY;
-//
-//            player.style.left = `calc(50% + ${x}px)`;
-//            player.style.top = `calc(50% + ${y}px)`;
-//        });
-//    }
-
 
     function arrangePlayers(table) {
         const players = [...table.querySelectorAll(".player-seat")];
@@ -125,16 +66,11 @@
         });
     }
 
-
-
-
     function arrangeAllTables() {
         document.querySelectorAll(tableSelector).forEach(table => {
             arrangePlayers(table);
         });
     }
-
-
 
     function addTestPanel() {
         const table = document.querySelector(tableSelector);
@@ -202,16 +138,14 @@
     }
 
 
-
     function observeGameState() {
-        const parent = document.getElementById("game-state")?.parentElement;
-        if (!parent) return;
+        const table = document.getElementById("game-state");
+        if (!table) return;
 
+        const parent = table.parentElement;
         let arrangeFrame = null;
 
         function refreshTable() {
-            //addTestPanel();
-
             if (arrangeFrame !== null) {
                 cancelAnimationFrame(arrangeFrame);
             }
@@ -222,19 +156,21 @@
             });
         }
 
-
-        const observer = new MutationObserver(() => {
+        const mutationObserver = new MutationObserver(() => {
             refreshTable();
         });
 
-        observer.observe(parent, {
+        mutationObserver.observe(parent, {
             childList: true,
             subtree: true
         });
 
-        //Test for many players
-        // addTestPanel();
-        // renderTestPlayers();
+        const resizeObserver = new ResizeObserver(() => {
+            refreshTable();
+        });
+
+        resizeObserver.observe(table);
+
         refreshTable();
     }
 
