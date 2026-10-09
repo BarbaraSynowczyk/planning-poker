@@ -311,7 +311,13 @@ app.post("/session/:id/vote", (req, res) => {
   if (!session || !user) {
     return res.sendStatus(404);
   }
-  if (!session.isVoting) {
+
+  if (
+    !session.isVoting ||
+    !session.timerEnd ||
+    Date.now() >= session.timerEnd ||
+    session.revealed
+  ) {
     return res.sendStatus(403);
   }
 
@@ -336,6 +342,8 @@ app.post("/session/:id/reveal", (req, res) => {
   }
 
   session.revealed = true;
+  session.isVoting = false;
+  session.timerEnd = null;
 
   broadcast(session);
   res.sendStatus(200);
