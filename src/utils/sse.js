@@ -75,7 +75,8 @@ const sessionIssuesTemplate = handlebars.compile(
 );
 
 
-export function broadcast(session) {
+
+export function broadcast(session, { updateTimer = false } = {}) {
     if (!session.clients) return;
 
     session.clients.forEach(client => {
@@ -87,19 +88,45 @@ export function broadcast(session) {
         );
 
         client.patchElements(
-            render(session, user, { omitPlayers: true })
+            render(session, user, {
+                omitPlayers: true,
+                omitTimer: true
+            })
         );
+
+        if (updateTimer) {
+            client.patchElements(
+                render(session, user, { timerOnly: true }),
+                { selector: "#timer", mode: "outer" }
+            );
+        }
     });
 }
+
 
 
 export function render(
     session,
     user,
-    { playersOnly = false, omitPlayers = false } = {}
+    {
+        playersOnly = false,
+        omitPlayers = false,
+        timerOnly = false,
+        omitTimer = false
+    } = {}
 ) {
 
     const isModerator = session.moderator === user.accountId;
+
+    const timerHtml = timerTemplate({
+        timerEnd: session.timerEnd,
+        remaining: session.remaining,
+        isModerator
+    });
+
+    if (timerOnly) {
+        return timerHtml;
+    }
 
     const playersWithVotes = session.players.map(p => ({
         ...p,
@@ -179,12 +206,6 @@ export function render(
              <div class="text-secondary">No task selected</div>
            </div>`;
 
-    const timerHtml = timerTemplate({
-        timerEnd: session.timerEnd,
-        remaining: session.remaining,
-        isModerator
-    });
-
     const resultsHtml = session.revealed
         ? `
         <div id="results-container" data-merge="outerHTML">
@@ -220,7 +241,7 @@ export function render(
     }
 
     return `
-        ${timerHtml}
+        ${omitTimer ? "" : timerHtml}
         ${omitPlayers ? "" : playersHtml}
         ${taskHtml}
         ${sessionIssuesHtml}

@@ -294,7 +294,7 @@ app.post("/session/:id/start", (req, res) => {
 
     session.timerEnd = Date.now() + 60000;
 
-    broadcast(session);
+    broadcast(session, { updateTimer: true });
     res.sendStatus(200);
 });
 
@@ -314,7 +314,7 @@ app.post("/session/:id/stop", (req, res) => {
 
     session.isVoting = false;
 
-    broadcast(session);
+    broadcast(session, { updateTimer: true });
     res.sendStatus(200);
 });
 
