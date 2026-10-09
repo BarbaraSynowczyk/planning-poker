@@ -107,7 +107,9 @@ app.get("/session/:id", (req, res) => {
         cards: session.cards,
         timerEnd: session.timerEnd,
         css: "/css/gamePage.css",
-        script: "/js/game.js"
+        script: "/js/game.js",
+        extraCss: ["/css/gameTable.css"],
+        extraScripts: ["/js/gameTable.js"]
     });
 
 });
@@ -292,7 +294,7 @@ app.post("/session/:id/start", (req, res) => {
 
     session.timerEnd = Date.now() + 60000;
 
-    broadcast(session);
+    broadcast(session, { updateTimer: true });
     res.sendStatus(200);
 });
 
@@ -312,7 +314,7 @@ app.post("/session/:id/stop", (req, res) => {
 
     session.isVoting = false;
 
-    broadcast(session);
+    broadcast(session, { updateTimer: true });
     res.sendStatus(200);
 });
 
