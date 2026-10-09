@@ -74,16 +74,30 @@ const sessionIssuesTemplate = handlebars.compile(
     )
 );
 
+
 export function broadcast(session) {
     if (!session.clients) return;
 
     session.clients.forEach(client => {
-        const html = render(session, client.sessionUser);
-        client.patchElements(html);
+        const user = client.sessionUser;
+
+        client.patchElements(
+            render(session, user, { playersOnly: true }),
+            { selector: "#game-state", mode: "inner" }
+        );
+
+        client.patchElements(
+            render(session, user, { omitPlayers: true })
+        );
     });
 }
 
-export function render(session, user) {
+
+export function render(
+    session,
+    user,
+    { playersOnly = false, omitPlayers = false } = {}
+) {
 
     const isModerator = session.moderator === user.accountId;
 
@@ -201,9 +215,13 @@ export function render(session, user) {
         jiraDomain: user.domain
     });
 
+    if (playersOnly) {
+        return playersHtml;
+    }
+
     return `
         ${timerHtml}
-        ${playersHtml}
+        ${omitPlayers ? "" : playersHtml}
         ${taskHtml}
         ${sessionIssuesHtml}
         ${resultsHtml}

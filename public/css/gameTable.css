@@ -1,0 +1,309 @@
+.table-container {
+    --table-width: 100%;
+
+    position: relative;
+    width: var(--table-width);
+    min-height: 420px;
+    height: auto;
+    margin: 24px auto;
+    isolation: isolate;
+    overflow: visible;
+}
+
+.table-players {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.table-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    width: min(60%, 300px);
+    min-height: 90px;
+    padding: 20px;
+
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    background: linear-gradient(
+        145deg,
+        rgba(40, 45, 65, 0.96),
+        rgba(20, 22, 35, 0.96)
+    );
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.08);
+
+    color: #d6dcff;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.player-seat {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: 100px;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.player-seat .player-card {
+    flex-shrink: 0;
+    width: 60px;
+    height: 80px;
+    border-radius: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 22px;
+    font-weight: bold;
+    background: linear-gradient(145deg, #1e1e2f, #2a2a40);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.player-seat .player-name {
+    width: 100%;
+    max-width: 100px;
+    margin-top: 8px !important;
+
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-height: 1.25;
+
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+}
+
+@media (max-width: 575.98px) {
+    .table-container {
+        margin: 16px auto;
+    }
+
+    .table-center {
+        width: 45%;
+        min-height: 70px;
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    .player-seat {
+        width: 76px;
+    }
+
+    .player-seat .player-card {
+        width: 48px;
+        height: 64px;
+        font-size: 18px;
+    }
+
+    .player-seat .player-name {
+        max-width: 76px;
+        font-size: 12px;
+    }
+}
+
+#table-test-panel {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 12px auto;
+    color: #cfd6ff;
+    font-size: 13px;
+}
+
+#table-test-panel button {
+    padding: 5px 12px;
+    border: 1px solid #46537b;
+    border-radius: 8px;
+    background: #232a40;
+    color: #fff;
+    cursor: pointer;
+}
+
+#table-test-panel button:hover {
+    background: #3b5bdb;
+}
+
+
+/* Smaller player cards for large groups */
+.table-container.large-group .player-seat {
+    width: 76px;
+}
+
+.table-container.large-group .player-card {
+    width: 44px;
+    height: 60px;
+    font-size: 17px;
+}
+
+.table-container.large-group .player-name {
+    max-width: 76px;
+    font-size: 12px;
+}
+
+@media (max-width: 575.98px) {
+    .table-container.large-group .player-seat {
+        width: 58px;
+    }
+
+    .table-container.large-group .player-card {
+        width: 36px;
+        height: 48px;
+        font-size: 15px;
+    }
+
+    .table-container.large-group .player-name {
+        max-width: 58px;
+        font-size: 10px;
+    }
+}
+
+
+/* Slightly smaller cards for 6–11 players */
+.table-container.medium-group .player-seat {
+    width: 88px;
+}
+
+.table-container.medium-group .player-card {
+    width: 52px;
+    height: 70px;
+    font-size: 20px;
+}
+
+.table-container.medium-group .player-name {
+    max-width: 88px;
+    font-size: 13px;
+}
+
+/* Smaller cards for 12–20 players */
+.table-container.large-group .player-seat {
+    width: 76px;
+}
+
+.table-container.large-group .player-card {
+    width: 44px;
+    height: 60px;
+    font-size: 17px;
+}
+
+.table-container.large-group .player-name {
+    max-width: 76px;
+    font-size: 12px;
+}
+
+@media (max-width: 575.98px) {
+    .table-container.medium-group .player-seat {
+        width: 68px;
+    }
+
+    .table-container.medium-group .player-card {
+        width: 42px;
+        height: 56px;
+        font-size: 17px;
+    }
+
+    .table-container.medium-group .player-name {
+        max-width: 68px;
+        font-size: 11px;
+    }
+
+    .table-container.large-group .player-seat {
+        width: 58px;
+    }
+
+    .table-container.large-group .player-card {
+        width: 36px;
+        height: 48px;
+        font-size: 15px;
+    }
+
+    .table-container.large-group .player-name {
+        max-width: 58px;
+        font-size: 10px;
+    }
+}
+
+
+/* Compact player seats for larger groups */
+.table-container.medium-group .player-seat {
+    width: 76px;
+}
+
+.table-container.medium-group .player-card {
+    width: 44px;
+    height: 60px;
+    font-size: 17px;
+}
+
+.table-container.medium-group .player-name {
+    max-width: 76px;
+    font-size: 12px;
+}
+
+.table-container.large-group .player-seat {
+    width: 60px;
+}
+
+.table-container.large-group .player-card {
+    width: 36px;
+    height: 50px;
+    font-size: 15px;
+}
+
+.table-container.large-group .player-name {
+    max-width: 60px;
+    font-size: 10px;
+    line-height: 1.15;
+}
+
+@media (max-width: 575.98px) {
+    .table-container.medium-group .player-seat {
+        width: 64px;
+    }
+
+    .table-container.medium-group .player-card {
+        width: 38px;
+        height: 52px;
+    }
+
+    .table-container.large-group .player-seat {
+        width: 50px;
+    }
+
+    .table-container.large-group .player-card {
+        width: 30px;
+        height: 42px;
+        font-size: 13px;
+    }
+
+    .table-container.large-group .player-name {
+        max-width: 50px;
+        font-size: 9px;
+    }
+}
+
+
+

@@ -12,11 +12,17 @@
     {{#if css}}
         <link href="{{css}}" rel="stylesheet">
     {{/if}}
+    {{#each extraCss}}
+        <link href="{{this}}" rel="stylesheet">
+    {{/each}}
 </head>
 <body>
 {{{body}}}
 {{#if script}}
     <script src="{{script}}"></script>
 {{/if}}
+{{#each extraScripts}}
+    <script src="{{this}}"></script>
+{{/each}}
 </body>
 </html>
