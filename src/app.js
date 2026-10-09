@@ -379,11 +379,11 @@ app.post("/create-session", async (req, res) => {
             res.set("datastar-selector", "#session-link-wrapper");
             res.set("datastar-mode", "inner");
 
-           return res.render("partials/moderator/sessionLink", {
-               layout: false,
-               sessionLink: `${req.protocol}://${req.get("host")}/join/${req.session.currentSessionId}`,
-               task,
-           });
+            return res.render("partials/moderator/sessionLink", {
+                layout: false,
+                sessionLink: `/join/${req.session.currentSessionId}`,
+                task,
+            });
         }
     }
 
@@ -417,7 +417,7 @@ app.post("/create-session", async (req, res) => {
 
     res.render("partials/moderator/sessionLink", {
         layout: false,
-        sessionLink: `${req.protocol}://${req.get("host")}/join/${sessionId}`,
+        sessionLink: `/join/${sessionId}`,
     });
 
 });
@@ -534,8 +534,6 @@ app.post("/filter", async (req, res) => {
     const paginatedFeatures = featuresArray.slice(start, start + itemsPerPage);
 
     const totals = calculateTotals(featuresArray);
-
-    console.log("PAGINATION:", page, totalPages);
 
     res.render("partials/moderator/kanban/kanban", {
         layout: false,
