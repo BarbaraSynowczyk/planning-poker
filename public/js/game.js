@@ -30,11 +30,20 @@ setInterval(() => {
 
 }, 1000);
 
+function clearSelectedCard() {
+    document.querySelectorAll("#cards .poker-card.selected")
+        .forEach(card => card.classList.remove("selected"));
+}
+
 window.startTimer = function () {
     const sessionId = document.getElementById("game-root").dataset.sessionId;
 
     fetch(`/session/${sessionId}/start`, {
         method: "POST"
+    }).then(response => {
+        if (!response.ok) return;
+
+        clearSelectedCard();
     });
 };
 
@@ -56,19 +65,33 @@ document.addEventListener("click", (e) => {
     const card = e.target.closest(".poker-card");
     if (!card) return;
 
-});
+    const timer = document.getElementById("timer");
+    const endRaw = timer?.getAttribute("data-end");
+    const end = Number(endRaw);
 
-document.addEventListener("click", (e) => {
-    const card = e.target.closest(".poker-card");
-    if (!card) return;
+    if (!endRaw || endRaw === "null" || !Number.isFinite(end)) {
+        return;
+    }
 
-    const value = card.innerText.trim();
+    if (Date.now() >= end) {
+        return;
+    }
+
     const sessionId = document.getElementById("game-root").dataset.sessionId;
+    const value = card.innerText.trim();
 
-    fetch(`/session/${sessionId}/vote?value=${value}`, {
+    fetch(`/session/${sessionId}/vote?value=${encodeURIComponent(value)}`, {
         method: "POST"
+    }).then(response => {
+        if (!response.ok) return;
+
+        document.querySelectorAll(".poker-card.selected")
+            .forEach(selectedCard => selectedCard.classList.remove("selected"));
+
+        card.classList.add("selected");
     });
 });
+
 
 document.addEventListener("DOMContentLoaded", () => {
     setInterval(() => {
@@ -119,4 +142,59 @@ document.addEventListener("click", (e) => {
                 alert("Error");
             });
     }
+});
+
+
+function updateCardAvailability() {
+    const timer = document.getElementById("timer");
+    const cards = document.getElementById("cards");
+
+    if (!timer || !cards) return;
+
+    const endRaw = timer.getAttribute("data-end");
+    const end = Number(endRaw);
+
+    const votingActive =
+        endRaw &&
+        endRaw !== "null" &&
+        Number.isFinite(end) &&
+        Date.now() < end;
+
+    cards.classList.toggle("voting-disabled", !votingActive);
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    updateCardAvailability();
+
+    const gameRoot = document.getElementById("game-root");
+    let lastTimerEnd = document.getElementById("timer")?.getAttribute("data-end");
+
+    if (gameRoot) {
+        const observer = new MutationObserver(() => {
+            updateCardAvailability();
+
+            const timer = document.getElementById("timer");
+            const currentTimerEnd = timer?.getAttribute("data-end");
+
+            if (
+                currentTimerEnd &&
+                currentTimerEnd !== "null" &&
+                currentTimerEnd !== lastTimerEnd
+            ) {
+                clearSelectedCard();
+            }
+
+            lastTimerEnd = currentTimerEnd;
+        });
+
+        observer.observe(gameRoot, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["data-end"]
+        });
+    }
+
+    setInterval(updateCardAvailability, 250);
 });

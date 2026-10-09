@@ -119,6 +119,40 @@ body {
   background: white;
 }
 
+.poker-card.selected {
+    background: linear-gradient(145deg, #2f63ff, #1f46c7);
+    transform: translateY(-4px);
+    box-shadow:
+        0 0 12px rgb(40, 67, 177),
+        0 8px 20px rgba(0, 0, 0, 0.6);
+}
+
+.poker-card.selected::before,
+.poker-card.selected .dot {
+    background: white;
+}
+
+
+/* Cards are inactive outside the voting period. */
+#cards.voting-disabled .poker-card {
+    cursor: not-allowed;
+}
+
+/* Disable hover effects while keeping the selected card highlighted. */
+#cards.voting-disabled .poker-card:hover:not(.selected) {
+    background: linear-gradient(145deg, #2a2f3f, #1c1f2a);
+    transform: none;
+    box-shadow:
+        inset 0 2px 4px rgba(255, 255, 255, 0.08),
+        0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+#cards.voting-disabled .poker-card:hover:not(.selected)::before,
+#cards.voting-disabled .poker-card:hover:not(.selected) .dot {
+    background: #4d6edd;
+}
+
+
 #cards {
   display: flex;
   flex-direction: row;
