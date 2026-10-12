@@ -30,20 +30,11 @@ setInterval(() => {
 
 }, 1000);
 
-function clearSelectedCard() {
-    document.querySelectorAll("#cards .poker-card.selected")
-        .forEach(card => card.classList.remove("selected"));
-}
-
 window.startTimer = function () {
     const sessionId = document.getElementById("game-root").dataset.sessionId;
 
     fetch(`/session/${sessionId}/start`, {
         method: "POST"
-    }).then(response => {
-        if (!response.ok) return;
-
-        clearSelectedCard();
     });
 };
 
@@ -60,38 +51,6 @@ window.reveal = function () {
         method: "POST"
     });
 };
-
-document.addEventListener("click", (e) => {
-    const card = e.target.closest(".poker-card");
-    if (!card) return;
-
-    const timer = document.getElementById("timer");
-    const endRaw = timer?.getAttribute("data-end");
-    const end = Number(endRaw);
-
-    if (!endRaw || endRaw === "null" || !Number.isFinite(end)) {
-        return;
-    }
-
-    if (Date.now() >= end) {
-        return;
-    }
-
-    const sessionId = document.getElementById("game-root").dataset.sessionId;
-    const value = card.innerText.trim();
-
-    fetch(`/session/${sessionId}/vote?value=${encodeURIComponent(value)}`, {
-        method: "POST"
-    }).then(response => {
-        if (!response.ok) return;
-
-        document.querySelectorAll(".poker-card.selected")
-            .forEach(selectedCard => selectedCard.classList.remove("selected"));
-
-        card.classList.add("selected");
-    });
-});
-
 
 document.addEventListener("DOMContentLoaded", () => {
     setInterval(() => {
@@ -168,24 +127,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCardAvailability();
 
     const gameRoot = document.getElementById("game-root");
-    let lastTimerEnd = document.getElementById("timer")?.getAttribute("data-end");
 
     if (gameRoot) {
         const observer = new MutationObserver(() => {
             updateCardAvailability();
-
-            const timer = document.getElementById("timer");
-            const currentTimerEnd = timer?.getAttribute("data-end");
-
-            if (
-                currentTimerEnd &&
-                currentTimerEnd !== "null" &&
-                currentTimerEnd !== lastTimerEnd
-            ) {
-                clearSelectedCard();
-            }
-
-            lastTimerEnd = currentTimerEnd;
         });
 
         observer.observe(gameRoot, {

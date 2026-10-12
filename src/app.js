@@ -89,6 +89,7 @@ app.get("/session/:id", (req, res) => {
   }
 
   const isModerator = session.moderator === user.accountId;
+  const selectedCard = session.votes[user.accountId] || "";
 
   const tasksToEstimate = session.tasks.filter(
     (task) => !task.storyPoints && (!task.labels || task.labels.length === 0),
@@ -108,6 +109,7 @@ app.get("/session/:id", (req, res) => {
     tasksToEstimate,
     tasksEstimated,
     cards: session.cards,
+    selectedCard,
     timerEnd: session.timerEnd,
     css: "/css/gamePage.css",
     script: "/js/game.js",
@@ -276,6 +278,7 @@ app.post("/session/:id/start", (req, res) => {
   session.votes = {};
   session.isVoting = true;
   session.revealed = false;
+  session.clearSelectedCards = true;
 
   session.timerEnd = Date.now() + 60000;
 

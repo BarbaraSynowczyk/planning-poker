@@ -74,13 +74,22 @@ const sessionIssuesTemplate = handlebars.compile(
     )
 );
 
+
 export function broadcast(session) {
     if (!session.clients) return;
 
     session.clients.forEach(client => {
+        if (session.clearSelectedCards) {
+            client.patchSignals(JSON.stringify({
+                "selectedCard": ""
+            }));
+        }
+
         const html = render(session, client.sessionUser);
         client.patchElements(html);
     });
+
+    session.clearSelectedCards = false;
 }
 
 export function render(session, user) {
@@ -168,7 +177,7 @@ export function render(session, user) {
     const timerHtml = timerTemplate({
         timerEnd: session.timerEnd,
         remaining: session.remaining,
-        isModerator
+        isModerator,
     });
 
     const resultsHtml = session.revealed
