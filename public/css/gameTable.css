@@ -1,8 +1,7 @@
 .table-container {
-    --table-width: 100%;
-
     position: relative;
-    width: var(--table-width);
+    width: 100%;
+    box-sizing: border-box;
     min-height: 420px;
     height: auto;
     margin: 24px auto;
@@ -95,7 +94,7 @@
     overflow: hidden;
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 576px) {
     .table-container {
         margin: 16px auto;
     }
@@ -147,107 +146,7 @@
     background: #3b5bdb;
 }
 
-
-/* Smaller player cards for large groups */
-.table-container.large-group .player-seat {
-    width: 76px;
-}
-
-.table-container.large-group .player-card {
-    width: 44px;
-    height: 60px;
-    font-size: 17px;
-}
-
-.table-container.large-group .player-name {
-    max-width: 76px;
-    font-size: 12px;
-}
-
-@media (max-width: 575.98px) {
-    .table-container.large-group .player-seat {
-        width: 58px;
-    }
-
-    .table-container.large-group .player-card {
-        width: 36px;
-        height: 48px;
-        font-size: 15px;
-    }
-
-    .table-container.large-group .player-name {
-        max-width: 58px;
-        font-size: 10px;
-    }
-}
-
-
-/* Slightly smaller cards for 6–11 players */
-.table-container.medium-group .player-seat {
-    width: 88px;
-}
-
-.table-container.medium-group .player-card {
-    width: 52px;
-    height: 70px;
-    font-size: 20px;
-}
-
-.table-container.medium-group .player-name {
-    max-width: 88px;
-    font-size: 13px;
-}
-
-/* Smaller cards for 12–20 players */
-.table-container.large-group .player-seat {
-    width: 76px;
-}
-
-.table-container.large-group .player-card {
-    width: 44px;
-    height: 60px;
-    font-size: 17px;
-}
-
-.table-container.large-group .player-name {
-    max-width: 76px;
-    font-size: 12px;
-}
-
-@media (max-width: 575.98px) {
-    .table-container.medium-group .player-seat {
-        width: 68px;
-    }
-
-    .table-container.medium-group .player-card {
-        width: 42px;
-        height: 56px;
-        font-size: 17px;
-    }
-
-    .table-container.medium-group .player-name {
-        max-width: 68px;
-        font-size: 11px;
-    }
-
-    .table-container.large-group .player-seat {
-        width: 58px;
-    }
-
-    .table-container.large-group .player-card {
-        width: 36px;
-        height: 48px;
-        font-size: 15px;
-    }
-
-    .table-container.large-group .player-name {
-        max-width: 58px;
-        font-size: 10px;
-    }
-}
-
-
-/* Compact player seats for larger groups */
+/* Medium groups: 6–11 players */
 .table-container.medium-group .player-seat {
     width: 76px;
 }
@@ -263,6 +162,7 @@
     font-size: 12px;
 }
 
+/* Large groups: 12+ players */
 .table-container.large-group .player-seat {
     width: 60px;
 }
@@ -279,7 +179,8 @@
     line-height: 1.15;
 }
 
-@media (max-width: 575.98px) {
+/* Compact cards on narrow screens */
+@media (max-width: 576px) {
     .table-container.medium-group .player-seat {
         width: 64px;
     }
@@ -287,6 +188,11 @@
     .table-container.medium-group .player-card {
         width: 38px;
         height: 52px;
+    }
+
+    .table-container.medium-group .player-name {
+        max-width: 64px;
+        font-size: 11px;
     }
 
     .table-container.large-group .player-seat {
@@ -305,5 +211,30 @@
     }
 }
 
+/* CSS-based player positioning */
+/* CSS-based player positioning */
+@supports (left: calc(50% + cos(90deg) * 40%)) {
+    .table-container {
+        --table-height: max(520px, calc(300px + var(--count, 0) * 25px));
+        height: var(--table-height);
+        min-height: var(--table-height);
+    }
 
+    .table-container .player-seat {
+        --angle: calc(360deg * var(--i) / var(--count) - 90deg);
 
+        left: calc(50% + cos(var(--angle)) * 42%);
+        top: calc(50% + sin(var(--angle)) * 42%);
+    }
+
+    @media (max-width: 576px) {
+        .table-container {
+            --table-height: max(520px, calc(300px + var(--count, 0) * 25px));
+        }
+
+        .table-container .player-seat {
+            left: calc(50% + cos(var(--angle)) * 42%);
+            top: calc(50% + sin(var(--angle)) * 42%);
+        }
+    }
+}

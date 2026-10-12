@@ -109,7 +109,6 @@ app.get("/session/:id", (req, res) => {
         css: "/css/gamePage.css",
         script: "/js/game.js",
         extraCss: ["/css/gameTable.css"],
-        extraScripts: ["/js/gameTable.js"]
     });
 
 });
