@@ -115,40 +115,56 @@ export function groupByFeature(tasks) {
   const features = {};
 
   tasks.forEach((task) => {
+    const featureKey = task.featureKey || "NO_FEATURE";
     const featureName = task.feature || "No Feature";
+    const groupKey = featureKey === "NO_FEATURE"
+      ? "NO_FEATURE"
+      : featureKey;
 
-    if (!features[featureName]) {
-      features[featureName] = [];
+    if (!features[groupKey]) {
+      features[groupKey] = {
+        featureName,
+        featureKey: task.featureKey || null,
+        tasks: [],
+      };
     }
 
-    features[featureName].push(task);
+    features[groupKey].tasks.push(task);
   });
 
-  return features;
+  return Object.fromEntries(
+    Object.entries(features).map(([key, feature]) => [
+      key,
+      feature.tasks,
+    ]),
+  );
 }
 
 export function splitFeaturesByEstimationStatus(features) {
-  const kanbanFeatures = Object.entries(features).map(([name, tasks]) => {
-    const analyze = tasks.filter((t) => t.labels?.length > 0);
+  const kanbanFeatures = Object.entries(features).map(
+    ([key, tasks]) => {
+      const analyze = tasks.filter((t) => t.labels?.length > 0);
 
-    const estimate = tasks.filter(
-      (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
-    );
+      const estimate = tasks.filter(
+        (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
+      );
 
-    const estimated = tasks.filter((t) => t.storyPoints);
+      const estimated = tasks.filter((t) => t.storyPoints);
 
-    return {
-      featureName: name,
-      featureKey: tasks[0]?.featureKey,
-      analyze,
-      estimate,
-      estimated,
-    };
-  });
+      return {
+        featureName: tasks[0]?.feature || "No Feature",
+        featureKey: tasks[0]?.featureKey || null,
+        hasNoFeature: !tasks[0]?.featureKey,
+        analyze,
+        estimate,
+        estimated,
+      };
+    },
+  );
 
   return kanbanFeatures.sort((a, b) => {
-    if (a.featureName === "No Feature") return 1;
-    if (b.featureName === "No Feature") return -1;
+    if (a.hasNoFeature && !b.hasNoFeature) return 1;
+    if (!a.hasNoFeature && b.hasNoFeature) return -1;
     return 0;
   });
 }
