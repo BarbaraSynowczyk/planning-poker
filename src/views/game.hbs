@@ -20,7 +20,7 @@
 
                 <p class="text-secondary text-center fs-5">Pick one card</p>
 
-                <div id="cards">
+                <div id="cards" class="{{#unless isVoting}}voting-disabled{{/unless}}">
                     {{#each cards}}
                         {{> card
                                 n=this

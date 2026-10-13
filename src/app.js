@@ -297,6 +297,21 @@ app.post("/session/:id/start", (req, res) => {
 
   session.timerEnd = Date.now() + 60000;
 
+  const timerEnd = session.timerEnd;
+
+  session.votingTimeout = setTimeout(() => {
+    if (session.timerEnd !== timerEnd) {
+      return;
+    }
+
+    session.remaining = 0;
+    session.timerEnd = null;
+    session.isVoting = false;
+    session.votingTimeout = null;
+
+    broadcast(session);
+  }, 60000);
+
   broadcast(session);
   res.sendStatus(200);
 });
@@ -310,11 +325,16 @@ app.post("/session/:id/stop", (req, res) => {
 
   if (!session.timerEnd) return res.sendStatus(200);
 
-  session.remaining = session.timerEnd - Date.now();
 
+  if (session.votingTimeout) {
+    clearTimeout(session.votingTimeout);
+    session.votingTimeout = null;
+  }
+
+  session.remaining = Math.max(0, session.timerEnd - Date.now());
   session.timerEnd = null;
-
   session.isVoting = false;
+
 
   broadcast(session);
   res.sendStatus(200);
@@ -359,9 +379,16 @@ app.post("/session/:id/reveal", (req, res) => {
     return res.status(403).send("Only moderator");
   }
 
+
+  if (session.votingTimeout) {
+    clearTimeout(session.votingTimeout);
+    session.votingTimeout = null;
+  }
+
   session.revealed = true;
   session.isVoting = false;
   session.timerEnd = null;
+
 
   broadcast(session);
   res.sendStatus(200);

@@ -68,7 +68,7 @@ const timerTemplate = handlebars.compile(
 );
 
 const cardsTemplate = handlebars.compile(`
-    <div id="cards">
+    <div id="cards" class="{{#unless isVoting}}voting-disabled{{/unless}}">
         {{#each cards}}
             {{> card
                 n=this
