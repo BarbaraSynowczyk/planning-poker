@@ -15,7 +15,7 @@ import {
 import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 import { v4 as uuidv4 } from "uuid";
 import { formatDate, timeAgo } from "./utils/dataHelpers.js";
-import { broadcast, render } from "./utils/sse.js";
+import { broadcast, render, renderCards } from "./utils/sse.js";
 import handlebars from "handlebars";
 import { updateStoryPoints } from "./services/jiraService.js";
 
@@ -89,13 +89,21 @@ app.get("/session/:id", (req, res) => {
   }
 
   const isModerator = session.moderator === user.accountId;
-  const selectedCard = session.votes[user.accountId] || "";
 
   const tasksToEstimate = session.tasks.filter(
     (task) => !task.storyPoints && (!task.labels || task.labels.length === 0),
   );
 
   const tasksEstimated = session.tasks.filter((task) => task.storyPoints);
+
+  const selectedCard = session.votes[user.accountId] || "";
+
+  const isVoting = Boolean(
+      session.isVoting &&
+      session.timerEnd &&
+      Date.now() < session.timerEnd &&
+      !session.revealed
+  );
 
   res.render("game", {
     sessionId,
@@ -110,10 +118,12 @@ app.get("/session/:id", (req, res) => {
     tasksEstimated,
     cards: session.cards,
     selectedCard,
+    isVoting,
     timerEnd: session.timerEnd,
     css: "/css/gamePage.css",
     script: "/js/game.js",
   });
+
 });
 
 app.get("/join/:id", (req, res) => {
@@ -179,6 +189,11 @@ app.get("/session/:id/events", (req, res) => {
   session.clients.push(sse);
 
   sse.patchElements(render(session, sse.sessionUser));
+
+  sse.patchElements(renderCards(session, sse.sessionUser), {
+      selector: "#cards",
+      mode: "outer",
+  });
 
   req.on("close", () => {
     session.clients = session.clients.filter((c) => c !== sse);
@@ -389,6 +404,7 @@ app.post("/create-session", async (req, res) => {
   );
 
   sessions[sessionId] = {
+    id: sessionId,
     projectKey: user.projectKey,
     createdBy: user.userName,
     moderator: user.accountId,

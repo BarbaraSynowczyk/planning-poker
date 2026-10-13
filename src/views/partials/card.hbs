@@ -1,12 +1,14 @@
-<div class="poker-card"
-     data-class:selected="$selectedCard === '{{n}}'"
-     data-on:click="if ($votingActive) { $selectedCard = '{{n}}'; @post('/session/{{sessionId}}/vote?value={{encode n}}') }">
-    {{#if (eq n "coffee")}}
-        ☕
-    {{else if (eq n "question")}}
-        ❓
-    {{else}}
-        {{n}}
-    {{/if}}
-    <span class="dot"></span>
+<div class="poker-card {{#if (eq n selectedCard)}}selected{{/if}}"
+     {{#unless isVoting}}data-disabled="true"{{/unless}}
+{{#if isVoting}}
+     data-on:click="@post('/session/{{sessionId}}/vote?value={{encode n}}')"
+{{/if}}>
+{{#if (eq n "coffee")}}
+    ☕
+{{else if (eq n "question")}}
+    ❓
+{{else}}
+    {{n}}
+{{/if}}
+<span class="dot"></span>
 </div>

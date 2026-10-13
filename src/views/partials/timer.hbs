@@ -3,8 +3,7 @@
     {{#if timerEnd}}
          data-end="{{timerEnd}}"
     {{/if}}
-     data-duration="60000"
-     data-on-interval__duration.250ms="$votingActive = Number(el.getAttribute('data-end')) > Date.now()">
+     data-duration="60000">
 
     <div class="timer-row">
         <div class="timer-left">
@@ -24,9 +23,7 @@
 
     {{#if isModerator}}
         <div class="timer-actions">
-            <button class="btn start"
-                    data-on:click="$selectedCard = ''"
-                    onclick="startTimer()">Start</button>
+            <button class="btn start" onclick="startTimer()">Start</button>
             <button class="btn stop" onclick="stopTimer()">Stop</button>
             <button class="btn reveal" onclick="reveal()">Reveal</button>
         </div>

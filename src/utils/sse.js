@@ -3,9 +3,13 @@ import path from "path";
 import handlebars from "handlebars";
 import { formatDate, timeAgo } from "../utils/dataHelpers.js";
 
+handlebars.registerHelper("encode", (value) =>
+    encodeURIComponent(value)
+);
+
 handlebars.registerHelper("formatDate", formatDate);
 handlebars.registerHelper("timeAgo", timeAgo);
-handlebars.registerHelper("eq", (a, b) => a === b);
+handlebars.registerHelper("eq", (a, b) => String(a) === String(b));
 handlebars.registerHelper("multiply", (a, b) => {
     if (!b) return 0;
     return (a / b) * 100;
@@ -63,6 +67,20 @@ const timerTemplate = handlebars.compile(
     fs.readFileSync(path.resolve("src/views/partials/timer.hbs"), "utf-8")
 );
 
+const cardsTemplate = handlebars.compile(`
+    <div id="cards">
+        {{#each cards}}
+            {{> card
+                n=this
+                sessionId=../sessionId
+                isVoting=../isVoting
+                selectedCard=../selectedCard
+            }}
+        {{/each}}
+    </div>
+`);
+
+
 const resultsTemplate = handlebars.compile(
     fs.readFileSync(path.resolve("src/views/partials/game/results.hbs"), "utf-8")
 );
@@ -75,26 +93,53 @@ const sessionIssuesTemplate = handlebars.compile(
 );
 
 
+export function renderCards(session, user) {
+    const selectedCard = session.votes[user.accountId] || "";
+
+    const isVoting = Boolean(
+        session.isVoting &&
+        session.timerEnd &&
+        Date.now() < session.timerEnd &&
+        !session.revealed
+    );
+
+    return cardsTemplate({
+        cards: session.cards || [],
+        sessionId: session.id,
+        isVoting,
+        selectedCard,
+    });
+}
+
 export function broadcast(session) {
     if (!session.clients) return;
 
     session.clients.forEach(client => {
-        if (session.clearSelectedCards) {
-            client.patchSignals(JSON.stringify({
-                "selectedCard": ""
-            }));
-        }
-
         const html = render(session, client.sessionUser);
         client.patchElements(html);
+
+        const cardsHtml = renderCards(session, client.sessionUser);
+        client.patchElements(cardsHtml, {
+            selector: "#cards",
+            mode: "outer",
+        });
     });
 
     session.clearSelectedCards = false;
 }
 
+
 export function render(session, user) {
 
     const isModerator = session.moderator === user.accountId;
+
+    const selectedCard = session.votes[user.accountId] || "";
+    const isVoting = Boolean(
+        session.isVoting &&
+        session.timerEnd &&
+        Date.now() < session.timerEnd &&
+        !session.revealed
+    );
 
     const playersWithVotes = session.players.map(p => ({
         ...p,
@@ -111,9 +156,9 @@ export function render(session, user) {
     });
 
 
-    const cards = session.cards || [];
+    const cardValues = session.cards || [];
 
-    const chartData = cards
+    const chartData = cardValues
         .filter(card => typeof card === "number")
         .map(card => ({
             value: card,
@@ -209,6 +254,7 @@ export function render(session, user) {
         tasksEstimated,
         jiraDomain: user.domain
     });
+
 
     return `
         ${timerHtml}
