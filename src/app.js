@@ -74,44 +74,47 @@ app.use(
 app.use(requestLogger);
 
 app.get("/session/:id", (req, res) => {
-  const { user } = req.session;
-  const sessionId = req.params.id;
+    const { user } = req.session;
+    const sessionId = req.params.id;
 
-  if (!user) {
-    req.session.redirectAfterLogin = req.originalUrl;
-    return res.redirect("/");
-  }
+    if (!user) {
+        req.session.redirectAfterLogin = req.originalUrl;
+        return res.redirect("/");
+    }
 
-  const session = sessions[sessionId];
+    const session = sessions[sessionId];
 
-  if (!session) {
-    return res.status(404).send("Session not found");
-  }
+    if (!session) {
+        return res.status(404).send("Session not found");
+    }
 
-  const isModerator = session.moderator === user.accountId;
+    const isModerator = session.moderator === user.accountId;
 
-  const tasksToEstimate = session.tasks.filter(
-    (task) => !task.storyPoints && (!task.labels || task.labels.length === 0),
-  );
+    const tasksToEstimate = session.tasks.filter(
+        task => !task.storyPoints && (!task.labels || task.labels.length === 0)
+    );
 
-  const tasksEstimated = session.tasks.filter((task) => task.storyPoints);
+    const tasksEstimated = session.tasks.filter(
+        task => task.storyPoints
+    );
 
-  res.render("game", {
-    sessionId,
-    jiraDomain: user.domain,
-    userName: user.userName,
-    avatar: user.avatar,
-    isModerator,
-    players: session.players,
-    activeTask: session.activeTask,
-    tasks: session.tasks,
-    tasksToEstimate,
-    tasksEstimated,
-    cards: session.cards,
-    timerEnd: session.timerEnd,
-    css: "/css/gamePage.css",
-    script: "/js/game.js",
-  });
+    res.render("game", {
+        sessionId,
+        jiraDomain: user.domain,
+        userName: user.userName,
+        avatar: user.avatar,
+        isModerator,
+        players: session.players,
+        activeTask: session.activeTask,
+        tasks: session.tasks,
+        tasksToEstimate,
+        tasksEstimated,
+        cards: session.cards,
+        timerEnd: session.timerEnd,
+        css: "/css/gamePage.css",
+        script: "/js/game.js",
+        extraCss: ["/css/gameTable.css"],
+    });
 });
 
 app.get("/join/:id", (req, res) => {
@@ -279,8 +282,8 @@ app.post("/session/:id/start", (req, res) => {
 
   session.timerEnd = Date.now() + 60000;
 
-  broadcast(session);
-  res.sendStatus(200);
+    broadcast(session, { updateTimer: true });
+    res.sendStatus(200);
 });
 
 app.post("/session/:id/stop", (req, res) => {
@@ -298,8 +301,8 @@ app.post("/session/:id/stop", (req, res) => {
 
   session.isVoting = false;
 
-  broadcast(session);
-  res.sendStatus(200);
+    broadcast(session, { updateTimer: true });
+    res.sendStatus(200);
 });
 
 // ################################### GEN BY AI ###############################

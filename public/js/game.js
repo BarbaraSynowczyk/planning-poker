@@ -25,8 +25,12 @@ setInterval(() => {
 
     document.getElementById("timer-text").innerText = `${mins}:${secs}`;
 
-    const percent = 100 - Math.max((remaining / 60000) * 100, 0);
-    document.getElementById("timer-progress").style.width = percent + "%";
+    const progress = document.getElementById("timer-progress");
+
+    if (progress) {
+        const percent = 100 - Math.max((remaining / 60000) * 100, 0);
+        progress.style.width = percent + "%";
+    }
 
 }, 1000);
 
@@ -51,12 +55,6 @@ window.reveal = function () {
         method: "POST"
     });
 };
-
-document.addEventListener("click", (e) => {
-    const card = e.target.closest(".poker-card");
-    if (!card) return;
-
-});
 
 document.addEventListener("click", (e) => {
     const card = e.target.closest(".poker-card");
