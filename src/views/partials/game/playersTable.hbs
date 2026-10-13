@@ -1,40 +1,35 @@
-<div class="table-container" data-merge="outerHTML" id="game-state" style="--count: {{players.length}}">
+<div class="table-container" id="game-state" style="--count: {{players.length}}">
 
     <div class="table-center">
         {{#if revealed}}
             Votes revealed
         {{else}}
-            {{#unless revealed}}
-                <div class="waiting">
-                    Waiting for votes... ({{notVoted}} left)
-                </div>
-            {{/unless}}
+            <div class="waiting">
+                Waiting for votes... ({{notVoted}} left)
+            </div>
         {{/if}}
     </div>
 
-    {{#each players}}
-        <div class="player-seat" style="--i: {{@index}}">
-
-            <div class="player-card text-white">
-
-                {{#if ../revealed}}
-                    {{this.vote}}
-                {{else}}
-                    {{#if this.vote}}
-                        ✔
+    <div class="table-players">
+        {{#each players}}
+            <div class="player-seat" style="--i: {{@index}}">
+                <div class="player-card text-white">
+                    {{#if ../revealed}}
+                        {{this.vote}}
                     {{else}}
-                        ?
+                        {{#if this.vote}}
+                            ✔
+                        {{else}}
+                            ?
+                        {{/if}}
                     {{/if}}
-                {{/if}}
+                    <span class="dot"></span>
+                </div>
 
-                <span class="dot"></span>
+                <div class="player-name text-white my-2">
+                    {{this.name}}
+                </div>
             </div>
-
-            <div class="player-name text-white my-2">
-                {{this.name}}
-            </div>
-
-        </div>
-    {{/each}}
-
+        {{/each}}
+    </div>
 </div>

@@ -74,18 +74,59 @@ const sessionIssuesTemplate = handlebars.compile(
     )
 );
 
-export function broadcast(session) {
+
+
+export function broadcast(session, { updateTimer = false } = {}) {
     if (!session.clients) return;
 
     session.clients.forEach(client => {
-        const html = render(session, client.sessionUser);
-        client.patchElements(html);
+        const user = client.sessionUser;
+
+        client.patchElements(
+            render(session, user, { playersOnly: true }),
+            { selector: "#game-state", mode: "inner" }
+        );
+
+        client.patchElements(
+            render(session, user, {
+                omitPlayers: true,
+                omitTimer: true
+            })
+        );
+
+        if (updateTimer) {
+            client.patchElements(
+                render(session, user, { timerOnly: true }),
+                { selector: "#timer", mode: "outer" }
+            );
+        }
     });
 }
 
-export function render(session, user) {
+
+
+export function render(
+    session,
+    user,
+    {
+        playersOnly = false,
+        omitPlayers = false,
+        timerOnly = false,
+        omitTimer = false
+    } = {}
+) {
 
     const isModerator = session.moderator === user.accountId;
+
+    const timerHtml = timerTemplate({
+        timerEnd: session.timerEnd,
+        remaining: session.remaining,
+        isModerator
+    });
+
+    if (timerOnly) {
+        return timerHtml;
+    }
 
     const playersWithVotes = session.players.map(p => ({
         ...p,
@@ -165,12 +206,6 @@ export function render(session, user) {
              <div class="text-secondary">No task selected</div>
            </div>`;
 
-    const timerHtml = timerTemplate({
-        timerEnd: session.timerEnd,
-        remaining: session.remaining,
-        isModerator
-    });
-
     const resultsHtml = session.revealed
         ? `
         <div id="results-container" data-merge="outerHTML">
@@ -201,9 +236,13 @@ export function render(session, user) {
         jiraDomain: user.domain
     });
 
+    if (playersOnly) {
+        return playersHtml;
+    }
+
     return `
-        ${timerHtml}
-        ${playersHtml}
+        ${omitTimer ? "" : timerHtml}
+        ${omitPlayers ? "" : playersHtml}
         ${taskHtml}
         ${sessionIssuesHtml}
         ${resultsHtml}
