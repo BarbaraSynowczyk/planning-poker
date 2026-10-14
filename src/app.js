@@ -423,9 +423,6 @@ app.post("/login", login);
 app.get("/game", isAuthenticated, async (req, res) => {
   const { user, currentSessionId } = req.session;
 
-  if (currentSessionId && sessions[currentSessionId]) {
-    return res.redirect(`/session/${currentSessionId}`);
-  }
 
   const filters = await getFilters(user.domain, user.auth);
   const tasks = await getIssues(user.domain, user.auth, user.projectKey);
