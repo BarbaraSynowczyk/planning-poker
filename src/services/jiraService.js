@@ -1,5 +1,11 @@
 import { getLogger } from "../middleware/logger.js";
 
+const storyPointsField = process.env.JIRA_STORY_POINTS_FIELD;
+
+if (!storyPointsField) {
+  throw new Error("JIRA_STORY_POINTS_FIELD is not configured");
+}
+
 export async function isModerator(projectKey, accountId, domain, auth) {
   const r = await fetch(`https://${domain}/rest/api/3/project/${projectKey}`, {
     headers: {
@@ -72,7 +78,7 @@ export async function getIssues(domain, auth, projectKey) {
   const jql = encodeURIComponent(`project = ${projectKey}`);
 
   const response = await fetch(
-    `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,duedate,comment,customfield_10016,parent&expand=renderedFields`,
+    `https://${domain}/rest/api/3/search/jql?jql=${jql}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,duedate,comment,${storyPointsField},parent&expand=renderedFields`,
     {
       method: "GET",
       headers: {
@@ -89,7 +95,7 @@ export async function getIssues(domain, auth, projectKey) {
     name: i.fields?.summary || "No title",
     dueDate: i.fields?.duedate || null,
     status: i.fields?.status?.name || "No status",
-    storyPoints: i.fields?.customfield_10016 || null,
+    storyPoints: i.fields?.[storyPointsField] || null,
     assignee: i.fields?.assignee?.displayName || "Unassigned",
     reporter: i.fields?.reporter?.displayName || "Unknown",
     labels: i.fields?.labels || [],
@@ -115,40 +121,56 @@ export function groupByFeature(tasks) {
   const features = {};
 
   tasks.forEach((task) => {
+    const featureKey = task.featureKey || "NO_FEATURE";
     const featureName = task.feature || "No Feature";
+    const groupKey = featureKey === "NO_FEATURE"
+      ? "NO_FEATURE"
+      : featureKey;
 
-    if (!features[featureName]) {
-      features[featureName] = [];
+    if (!features[groupKey]) {
+      features[groupKey] = {
+        featureName,
+        featureKey: task.featureKey || null,
+        tasks: [],
+      };
     }
 
-    features[featureName].push(task);
+    features[groupKey].tasks.push(task);
   });
 
-  return features;
+  return Object.fromEntries(
+    Object.entries(features).map(([key, feature]) => [
+      key,
+      feature.tasks,
+    ]),
+  );
 }
 
 export function splitFeaturesByEstimationStatus(features) {
-  const kanbanFeatures = Object.entries(features).map(([name, tasks]) => {
-    const analyze = tasks.filter((t) => t.labels?.length > 0);
+  const kanbanFeatures = Object.entries(features).map(
+    ([key, tasks]) => {
+      const analyze = tasks.filter((t) => t.labels?.length > 0);
 
-    const estimate = tasks.filter(
-      (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
-    );
+      const estimate = tasks.filter(
+        (t) => !t.storyPoints && (!t.labels || t.labels.length === 0),
+      );
 
-    const estimated = tasks.filter((t) => t.storyPoints);
+      const estimated = tasks.filter((t) => t.storyPoints);
 
-    return {
-      featureName: name,
-      featureKey: tasks[0]?.featureKey,
-      analyze,
-      estimate,
-      estimated,
-    };
-  });
+      return {
+        featureName: tasks[0]?.feature || "No Feature",
+        featureKey: tasks[0]?.featureKey || null,
+        hasNoFeature: !tasks[0]?.featureKey,
+        analyze,
+        estimate,
+        estimated,
+      };
+    },
+  );
 
   return kanbanFeatures.sort((a, b) => {
-    if (a.featureName === "No Feature") return 1;
-    if (b.featureName === "No Feature") return -1;
+    if (a.hasNoFeature && !b.hasNoFeature) return 1;
+    if (!a.hasNoFeature && b.hasNoFeature) return -1;
     return 0;
   });
 }
@@ -176,7 +198,7 @@ export async function updateStoryPoints(domain, auth, issueKey, points) {
       },
       body: JSON.stringify({
         fields: {
-          customfield_10016: Number(points),
+          [storyPointsField]: Number(points),
         },
       }),
     },
@@ -204,7 +226,7 @@ export async function getIssuesWithJql(domain, auth, jql, projectKey) {
   const encoded = encodeURIComponent(finalJql);
 
   const response = await fetch(
-    `https://${domain}/rest/api/3/search/jql?jql=${encoded}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,duedate,comment,customfield_10016,parent&expand=renderedFields`,
+    `https://${domain}/rest/api/3/search/jql?jql=${encoded}&maxResults=100&fields=summary,status,assignee,reporter,labels,description,created,updated,duedate,comment,${storyPointsField},parent&expand=renderedFields`,
     {
       headers: {
         Authorization: `Basic ${auth}`,
@@ -220,7 +242,7 @@ export async function getIssuesWithJql(domain, auth, jql, projectKey) {
     name: i.fields?.summary || "No title",
     dueDate: i.fields?.duedate || null,
     status: i.fields?.status?.name || "No status",
-    storyPoints: i.fields?.customfield_10016 || null,
+    storyPoints: i.fields?.[storyPointsField] || null,
     assignee: i.fields?.assignee?.displayName || "Unassigned",
     reporter: i.fields?.reporter?.displayName || "Unknown",
     labels: i.fields?.labels || [],

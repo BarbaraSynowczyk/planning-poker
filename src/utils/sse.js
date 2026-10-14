@@ -93,6 +93,7 @@ const sessionIssuesTemplate = handlebars.compile(
 );
 
 
+
 export function renderCards(session, user) {
     const selectedCard = session.votes[user.accountId] || "";
 
@@ -111,26 +112,52 @@ export function renderCards(session, user) {
     });
 }
 
-export function broadcast(session) {
+export function broadcast(session, { updateTimer = false } = {}) {
     if (!session.clients) return;
 
     session.clients.forEach(client => {
-        const html = render(session, client.sessionUser);
-        client.patchElements(html);
+        const user = client.sessionUser;
 
-        const cardsHtml = renderCards(session, client.sessionUser);
+        client.patchElements(
+            render(session, user, { playersOnly: true }),
+            { selector: "#game-state", mode: "inner" }
+        );
+
+        client.patchElements(
+            render(session, user, {
+                omitPlayers: true,
+                omitTimer: true
+            })
+        );
+
+        const cardsHtml = renderCards(session, user);
         client.patchElements(cardsHtml, {
             selector: "#cards",
-            mode: "outer",
+            mode: "outer"
         });
+
+        if (updateTimer) {
+            client.patchElements(
+                render(session, user, { timerOnly: true }),
+                { selector: "#timer", mode: "outer" }
+            );
+        }
     });
 
     session.clearSelectedCards = false;
 }
 
 
-export function render(session, user) {
-
+export function render(
+    session,
+    user,
+    {
+        playersOnly = false,
+        omitPlayers = false,
+        timerOnly = false,
+        omitTimer = false
+    } = {}
+) {
     const isModerator = session.moderator === user.accountId;
 
     const selectedCard = session.votes[user.accountId] || "";
@@ -140,6 +167,16 @@ export function render(session, user) {
         Date.now() < session.timerEnd &&
         !session.revealed
     );
+
+    const timerHtml = timerTemplate({
+        timerEnd: session.timerEnd,
+        remaining: session.remaining,
+        isModerator
+    });
+
+    if (timerOnly) {
+        return timerHtml;
+    }
 
     const playersWithVotes = session.players.map(p => ({
         ...p,
@@ -219,12 +256,6 @@ export function render(session, user) {
              <div class="text-secondary">No task selected</div>
            </div>`;
 
-    const timerHtml = timerTemplate({
-        timerEnd: session.timerEnd,
-        remaining: session.remaining,
-        isModerator,
-    });
-
     const resultsHtml = session.revealed
         ? `
         <div id="results-container" data-merge="outerHTML">
@@ -255,10 +286,13 @@ export function render(session, user) {
         jiraDomain: user.domain
     });
 
+    if (playersOnly) {
+        return playersHtml;
+    }
 
     return `
-        ${timerHtml}
-        ${playersHtml}
+        ${omitTimer ? "" : timerHtml}
+        ${omitPlayers ? "" : playersHtml}
         ${taskHtml}
         ${sessionIssuesHtml}
         ${resultsHtml}
