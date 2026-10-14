@@ -119,8 +119,6 @@ app.get("/session/:id", (req, res) => {
 
 app.get("/join/:id", (req, res) => {
   const sessionId = req.params.id;
-  req.session.user = null;
-
   req.session.redirectAfterLogin = `/session/${sessionId}`;
 
   return res.redirect("/");
@@ -422,7 +420,6 @@ app.post("/login", login);
 
 app.get("/game", isAuthenticated, async (req, res) => {
   const { user, currentSessionId } = req.session;
-
 
   const filters = await getFilters(user.domain, user.auth);
   const tasks = await getIssues(user.domain, user.auth, user.projectKey);
