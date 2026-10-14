@@ -15,7 +15,7 @@ import {
 import { ServerSentEventGenerator } from "@starfederation/datastar-sdk/node";
 import { v4 as uuidv4 } from "uuid";
 import { formatDate, timeAgo } from "./utils/dataHelpers.js";
-import { broadcast, render, renderCards } from "./utils/sse.js";
+import { broadcast, render } from "./utils/sse.js";
 import handlebars from "handlebars";
 import { updateStoryPoints } from "./services/jiraService.js";
 
@@ -98,15 +98,6 @@ app.get("/session/:id", (req, res) => {
         task => task.storyPoints
     );
 
-  const selectedCard = session.votes[user.accountId] || "";
-
-  const isVoting = Boolean(
-      session.isVoting &&
-      session.timerEnd &&
-      Date.now() < session.timerEnd &&
-      !session.revealed
-  );
-
     res.render("game", {
         sessionId,
         jiraDomain: user.domain,
@@ -119,9 +110,7 @@ app.get("/session/:id", (req, res) => {
         tasksToEstimate,
         tasksEstimated,
         cards: session.cards,
-        selectedCard,
-        isVoting,
-        timerEnd: session.timerEnd,   
+        timerEnd: session.timerEnd,
         css: "/css/gamePage.css",
         script: "/js/game.js",
         extraCss: ["/css/gameTable.css"],
@@ -191,11 +180,6 @@ app.get("/session/:id/events", (req, res) => {
   session.clients.push(sse);
 
   sse.patchElements(render(session, sse.sessionUser));
-
-  sse.patchElements(renderCards(session, sse.sessionUser), {
-      selector: "#cards",
-      mode: "outer",
-  });
 
   req.on("close", () => {
     session.clients = session.clients.filter((c) => c !== sse);
@@ -295,27 +279,12 @@ app.post("/session/:id/start", (req, res) => {
   session.votes = {};
   session.isVoting = true;
   session.revealed = false;
-  session.clearSelectedCards = true;
 
   session.timerEnd = Date.now() + 60000;
 
-const timerEnd = session.timerEnd;
-
-session.votingTimeout = setTimeout(() => {
-    if (session.timerEnd !== timerEnd) {
-        return;
-    }
-
-    session.remaining = 0;
-    session.timerEnd = null;
-    session.isVoting = false;
-    session.votingTimeout = null;
-
     broadcast(session, { updateTimer: true });
-}, 60000);
-
-broadcast(session, { updateTimer: true });
-res.sendStatus(200);
+    res.sendStatus(200);
+});
 
 app.post("/session/:id/stop", (req, res) => {
   const session = sessions[req.params.id];
@@ -326,18 +295,15 @@ app.post("/session/:id/stop", (req, res) => {
 
   if (!session.timerEnd) return res.sendStatus(200);
 
+  session.remaining = session.timerEnd - Date.now();
 
-  if (session.votingTimeout) {
-    clearTimeout(session.votingTimeout);
-    session.votingTimeout = null;
-  }
-
-  session.remaining = Math.max(0, session.timerEnd - Date.now());
   session.timerEnd = null;
+
   session.isVoting = false;
 
-broadcast(session, { updateTimer: true });
-res.sendStatus(200);
+    broadcast(session, { updateTimer: true });
+    res.sendStatus(200);
+});
 
 // ################################### GEN BY AI ###############################
 
@@ -348,13 +314,7 @@ app.post("/session/:id/vote", (req, res) => {
   if (!session || !user) {
     return res.sendStatus(404);
   }
-
-  if (
-    !session.isVoting ||
-    !session.timerEnd ||
-    Date.now() >= session.timerEnd ||
-    session.revealed
-  ) {
+  if (!session.isVoting) {
     return res.sendStatus(403);
   }
 
@@ -378,16 +338,7 @@ app.post("/session/:id/reveal", (req, res) => {
     return res.status(403).send("Only moderator");
   }
 
-
-  if (session.votingTimeout) {
-    clearTimeout(session.votingTimeout);
-    session.votingTimeout = null;
-  }
-
   session.revealed = true;
-  session.isVoting = false;
-  session.timerEnd = null;
-
 
   broadcast(session);
   res.sendStatus(200);
@@ -430,7 +381,6 @@ app.post("/create-session", async (req, res) => {
   );
 
   sessions[sessionId] = {
-    id: sessionId,
     projectKey: user.projectKey,
     createdBy: user.userName,
     moderator: user.accountId,

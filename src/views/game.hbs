@@ -12,22 +12,15 @@
             {{> timer}}
 
             <div class="game-center">
-                <div id="game-state">
-                    {{> game/playersTable players=players}}
-                </div>
+                {{> game/playersTable players=players}}
 
                 <hr class="text-secondary"/>
 
                 <p class="text-secondary text-center fs-5">Pick one card</p>
 
-                <div id="cards" class="{{#unless isVoting}}voting-disabled{{/unless}}">
+                <div id="cards">
                     {{#each cards}}
-                        {{> card
-                                n=this
-                                sessionId=../sessionId
-                                isVoting=../isVoting
-                                selectedCard=selectedCard
-                        }}
+                        {{> card n=this userName=userName}}
                     {{/each}}
                 </div>
             </div>
@@ -35,7 +28,7 @@
         </div>
         <div class="col-12 col-xl-6 align-self-stretch d-flex flex-column h-100">
 
-            <div id="task-container">
+            <div id="task-container" data-merge="outerHTML">
                 {{#if activeTask}}
                     {{> game/userTicketPreview task=activeTask}}
                 {{else}}
