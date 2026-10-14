@@ -15,7 +15,13 @@
             <div class="player-seat" style="--i: {{@index}}">
                 <div class="player-card text-white">
                     {{#if ../revealed}}
-                        {{this.vote}}
+                        {{#if (eq this.vote "coffee")}}
+                            ☕
+                        {{else if (eq this.vote "question")}}
+                            ❓
+                        {{else}}
+                            {{this.vote}}
+                        {{/if}}
                     {{else}}
                         {{#if this.vote}}
                             ✔

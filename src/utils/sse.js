@@ -3,9 +3,13 @@ import path from "path";
 import handlebars from "handlebars";
 import { formatDate, timeAgo } from "../utils/dataHelpers.js";
 
+handlebars.registerHelper("encode", (value) =>
+    encodeURIComponent(value)
+);
+
 handlebars.registerHelper("formatDate", formatDate);
 handlebars.registerHelper("timeAgo", timeAgo);
-handlebars.registerHelper("eq", (a, b) => a === b);
+handlebars.registerHelper("eq", (a, b) => String(a) === String(b));
 handlebars.registerHelper("multiply", (a, b) => {
     if (!b) return 0;
     return (a / b) * 100;
@@ -63,6 +67,20 @@ const timerTemplate = handlebars.compile(
     fs.readFileSync(path.resolve("src/views/partials/timer.hbs"), "utf-8")
 );
 
+const cardsTemplate = handlebars.compile(`
+    <div id="cards" class="{{#unless isVoting}}voting-disabled{{/unless}}">
+        {{#each cards}}
+            {{> card
+                n=this
+                sessionId=../sessionId
+                isVoting=../isVoting
+                selectedCard=../selectedCard
+            }}
+        {{/each}}
+    </div>
+`);
+
+
 const resultsTemplate = handlebars.compile(
     fs.readFileSync(path.resolve("src/views/partials/game/results.hbs"), "utf-8")
 );
@@ -75,6 +93,23 @@ const sessionIssuesTemplate = handlebars.compile(
 );
 
 
+export function renderCards(session, user) {
+    const selectedCard = session.votes[user.accountId] || "";
+
+    const isVoting = Boolean(
+        session.isVoting &&
+        session.timerEnd &&
+        Date.now() < session.timerEnd &&
+        !session.revealed
+    );
+
+    return cardsTemplate({
+        cards: session.cards || [],
+        sessionId: session.id,
+        isVoting,
+        selectedCard,
+    });
+}
 
 export function broadcast(session, { updateTimer = false } = {}) {
     if (!session.clients) return;
@@ -94,6 +129,12 @@ export function broadcast(session, { updateTimer = false } = {}) {
             })
         );
 
+        const cardsHtml = renderCards(session, user);
+        client.patchElements(cardsHtml, {
+            selector: "#cards",
+            mode: "outer",
+        });
+
         if (updateTimer) {
             client.patchElements(
                 render(session, user, { timerOnly: true }),
@@ -101,8 +142,9 @@ export function broadcast(session, { updateTimer = false } = {}) {
             );
         }
     });
-}
 
+    session.clearSelectedCards = false;
+}
 
 
 export function render(
@@ -115,8 +157,16 @@ export function render(
         omitTimer = false
     } = {}
 ) {
-
     const isModerator = session.moderator === user.accountId;
+
+    const selectedCard = session.votes[user.accountId] || "";
+
+    const isVoting = Boolean(
+        session.isVoting &&
+        session.timerEnd &&
+        Date.now() < session.timerEnd &&
+        !session.revealed
+    );
 
     const timerHtml = timerTemplate({
         timerEnd: session.timerEnd,
@@ -143,9 +193,9 @@ export function render(
     });
 
 
-    const cards = session.cards || [];
+    const cardValues = session.cards || [];
 
-    const chartData = cards
+    const chartData = cardValues
         .filter(card => typeof card === "number")
         .map(card => ({
             value: card,
@@ -206,10 +256,15 @@ export function render(
              <div class="text-secondary">No task selected</div>
            </div>`;
 
-    const resultsHtml = session.revealed
-        ? `
-        <div id="results-container" data-merge="outerHTML">
-            ${resultsTemplate({
+const timerHtml = timerTemplate({
+    timerEnd: session.timerEnd,
+    remaining: session.remaining,
+    isModerator,
+});
+
+const resultsHtml = session.revealed
+    ? `<div id="results-container" data-merge="outerHTML">
+        ${resultsTemplate({
             chartData,
             maxCount,
             median,
@@ -218,33 +273,28 @@ export function render(
             revealed: session.revealed,
             isModerator
         })}
-        </div>
-      `
-        : `<div id="results-container" data-merge="outerHTML"></div>`;
+    </div>`
+    : `<div id="results-container" data-merge="outerHTML"></div>`;
 
-    const tasksToEstimate = session.tasks.filter(
-       task => !task.storyPoints && (!task.labels || task.labels.length === 0)
-    );
+const tasksToEstimate = session.tasks.filter(
+    task => !task.storyPoints && (!task.labels || task.labels.length === 0)
+);
 
-    const tasksEstimated = session.tasks.filter(
-       task => task.storyPoints
-    );
+const tasksEstimated = session.tasks.filter(
+    task => task.storyPoints
+);
 
-    const sessionIssuesHtml = sessionIssuesTemplate({
-        tasksToEstimate,
-        tasksEstimated,
-        jiraDomain: user.domain
-    });
+const sessionIssuesHtml = sessionIssuesTemplate({
+    tasksToEstimate,
+    tasksEstimated,
+    jiraDomain: user.domain
+});
 
-    if (playersOnly) {
-        return playersHtml;
-    }
-
-    return `
-        ${omitTimer ? "" : timerHtml}
-        ${omitPlayers ? "" : playersHtml}
-        ${taskHtml}
-        ${sessionIssuesHtml}
-        ${resultsHtml}
-    `;
+return `
+    ${omitTimer ? "" : timerHtml}
+    ${omitPlayers ? "" : playersHtml}
+    ${taskHtml}
+    ${sessionIssuesHtml}
+    ${resultsHtml}
+`;
 }
