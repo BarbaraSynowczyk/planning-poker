@@ -1,9 +1,9 @@
 <div class="container-fluid"
      id="game-root"
      data-session-id="{{sessionId}}"
-     data-init="@get('/session/{{sessionId}}/events')"
-     data-on:visible="@get('/session/{{sessionId}}/events')"
->
+     data-context-id="{{contextId}}"
+     data-init="@get('/session/{{sessionId}}/events?context={{contextId}}')"
+     data-on:visible="@get('/session/{{sessionId}}/events?context={{contextId}}')">
     {{>topbar avatar=avatar userName=userName}}
 
     <div class="row game-main-row m-4">
