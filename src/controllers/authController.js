@@ -1,5 +1,7 @@
 import { getLogger } from "../middleware/logger.js";
 
+export const userContexts = new Map();
+
 export const login = async (req, res) => {
   const { email, password, domain } = req.body;
 
@@ -52,7 +54,7 @@ export const login = async (req, res) => {
     const projectData = await projectResponse.json();
     const projectKey = projectData.values[0]?.key;
 
-    req.session.user = {
+    const user = {
       userName: data.displayName,
       avatar: Object.values(data.avatarUrls)[0],
       accountId: data.accountId,
@@ -61,7 +63,19 @@ export const login = async (req, res) => {
       projectKey,
     };
 
-    const redirect = req.session.redirectAfterLogin || "/game";
+    const contextId = req.body.context;
+
+    if (contextId) {
+      userContexts.set(contextId, user);
+    }
+
+    if (!contextId) {
+      req.session.user = user;
+    }
+
+    const redirect = req.body.context && req.body.sessionId
+      ? `/session/${encodeURIComponent(req.body.sessionId)}?context=${encodeURIComponent(req.body.context)}`
+      : req.session.redirectAfterLogin || "/game";
 
     delete req.session.redirectAfterLogin;
 

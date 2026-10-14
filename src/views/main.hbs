@@ -5,6 +5,8 @@
     </div>
 
     <form method="POST" autocomplete="on" action="/login" class="w-75 d-flex flex-column align-items-center">
+        <input type="hidden" name="context" value="{{contextId}}">
+        <input type="hidden" name="sessionId" value="{{sessionId}}">
 
         {{> login/input
                 type="text"
@@ -15,7 +17,6 @@
                 icon="🌐"
                 id="domain"
         }}
-
 
         {{> login/input
                 type="email"

@@ -35,23 +35,31 @@ setInterval(() => {
 }, 1000);
 
 window.startTimer = function () {
-    const sessionId = document.getElementById("game-root").dataset.sessionId;
+    const gameRoot = document.getElementById("game-root");
+    const sessionId = gameRoot.dataset.sessionId;
+    const contextId = gameRoot.dataset.contextId;
 
-    fetch(`/session/${sessionId}/start`, {
+    fetch(`/session/${sessionId}/start?context=${encodeURIComponent(contextId)}`, {
         method: "POST"
     });
 };
 
 window.stopTimer = function () {
+    const gameRoot = document.getElementById("game-root");
+    const sessionId = gameRoot.dataset.sessionId;
+    const contextId = gameRoot.dataset.contextId;
 
-    fetch(window.location.pathname + "/stop", {
+    fetch(`/session/${sessionId}/stop?context=${encodeURIComponent(contextId)}`, {
         method: "POST"
     });
 };
 
 window.reveal = function () {
+    const gameRoot = document.getElementById("game-root");
+    const sessionId = gameRoot.dataset.sessionId;
+    const contextId = gameRoot.dataset.contextId;
 
-    fetch(window.location.pathname + "/reveal", {
+    fetch(`/session/${sessionId}/reveal?context=${encodeURIComponent(contextId)}`, {
         method: "POST"
     });
 };
@@ -61,9 +69,11 @@ document.addEventListener("click", (e) => {
     if (!card) return;
 
     const value = card.innerText.trim();
-    const sessionId = document.getElementById("game-root").dataset.sessionId;
+    const gameRoot = document.getElementById("game-root");
+    const sessionId = gameRoot.dataset.sessionId;
+    const contextId = gameRoot.dataset.contextId;
 
-    fetch(`/session/${sessionId}/vote?value=${value}`, {
+    fetch(`/session/${sessionId}/vote?value=${encodeURIComponent(value)}&context=${encodeURIComponent(contextId)}`, {
         method: "POST"
     });
 });
@@ -103,7 +113,10 @@ document.addEventListener("click", (e) => {
             return;
         }
 
-        fetch(window.location.pathname + "/save-estimate", {
+        const gameRoot = document.getElementById("game-root");
+        const contextId = gameRoot.dataset.contextId;
+
+        fetch(`${window.location.pathname}/save-estimate?context=${encodeURIComponent(contextId)}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

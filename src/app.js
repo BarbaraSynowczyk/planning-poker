@@ -1,7 +1,7 @@
 import express from "express";
 import session from "express-session";
 import { engine } from "express-handlebars";
-import { login } from "./controllers/authController.js";
+import { login, userContexts } from "./controllers/authController.js";
 import { attachRole, isAuthenticated } from "./middleware/requireAuth.js";
 import { logger, requestLogger } from "./middleware/logger.js";
 import {
@@ -74,10 +74,15 @@ app.use(
 app.use(requestLogger);
 
 app.get("/session/:id", (req, res) => {
-    const { user } = req.session;
     const sessionId = req.params.id;
+    const contextId = req.query.context;
+    const user = contextId ? userContexts.get(contextId) : req.session.user;
 
     if (!user) {
+        if (contextId) {
+            return res.redirect("/");
+        }
+
         req.session.redirectAfterLogin = req.originalUrl;
         return res.redirect("/");
     }
@@ -100,6 +105,7 @@ app.get("/session/:id", (req, res) => {
 
     res.render("game", {
         sessionId,
+        contextId: req.query.context,
         jiraDomain: user.domain,
         userName: user.userName,
         avatar: user.avatar,
@@ -119,20 +125,18 @@ app.get("/session/:id", (req, res) => {
 
 app.get("/join/:id", (req, res) => {
   const sessionId = req.params.id;
-  req.session.user = null;
+  const contextId = uuidv4();
 
-  req.session.redirectAfterLogin = `/session/${sessionId}`;
-
-  return res.redirect("/");
+  return res.redirect(`/?context=${contextId}&sessionId=${sessionId}`);
 });
 
-app.post("/session/:id/active-task", (req, res) => {
-  const { user } = req.session;
-  const sessionId = req.params.id;
 
+app.post("/session/:id/active-task", (req, res) => {
+  const user = userContexts.get(req.query.context);
+  const sessionId = req.params.id;
   const session = sessions[sessionId];
 
-  if (!session) {
+  if (!session || !user) {
     return res.status(404).send("Session not found");
   }
 
@@ -156,11 +160,12 @@ app.post("/session/:id/active-task", (req, res) => {
 app.get("/session/:id/events", (req, res) => {
   const sessionId = req.params.id;
   const session = sessions[sessionId];
-  const { user } = req.session;
+  const contextId = req.query.context;
+  const user = userContexts.get(contextId);
 
-  if (!session || !user) {
-    return res.status(404).end();
-  }
+    if (!session || !user) {
+      return res.status(404).end();
+    }
 
   const exists = session.players.find((p) => p.accountId === user.accountId);
 
@@ -188,7 +193,7 @@ app.get("/session/:id/events", (req, res) => {
 
 app.post("/session/:id/save-estimate", async (req, res) => {
   const session = sessions[req.params.id];
-  const user = req.session.user;
+  const user = userContexts.get(req.query.context);
 
   if (!session || !user) {
     return res.sendStatus(404);
@@ -265,10 +270,16 @@ app.get("/jira-attachment/:id", async (req, res) => {
   }
 });
 
+
 app.post("/session/:id/start", (req, res) => {
   const session = sessions[req.params.id];
+  const user = userContexts.get(req.query.context);
 
-  if (session.moderator !== req.session.user.accountId) {
+  if (!session || !user) {
+    return res.sendStatus(404);
+  }
+
+  if (session.moderator !== user.accountId) {
     return res.status(403).send("Only moderator");
   }
 
@@ -279,37 +290,40 @@ app.post("/session/:id/start", (req, res) => {
   session.votes = {};
   session.isVoting = true;
   session.revealed = false;
-
   session.timerEnd = Date.now() + 60000;
 
-    broadcast(session, { updateTimer: true });
-    res.sendStatus(200);
+  broadcast(session, { updateTimer: true });
+  res.sendStatus(200);
 });
 
 app.post("/session/:id/stop", (req, res) => {
   const session = sessions[req.params.id];
+  const user = userContexts.get(req.query.context);
 
-  if (session.moderator !== req.session.user.accountId) {
+  if (!session || !user) {
+    return res.sendStatus(404);
+  }
+
+  if (session.moderator !== user.accountId) {
     return res.status(403).send("Only moderator");
   }
 
   if (!session.timerEnd) return res.sendStatus(200);
 
   session.remaining = session.timerEnd - Date.now();
-
   session.timerEnd = null;
-
   session.isVoting = false;
 
-    broadcast(session, { updateTimer: true });
-    res.sendStatus(200);
+  broadcast(session, { updateTimer: true });
+  res.sendStatus(200);
 });
+
 
 // ################################### GEN BY AI ###############################
 
 app.post("/session/:id/vote", (req, res) => {
   const session = sessions[req.params.id];
-  const user = req.session.user;
+  const user = userContexts.get(req.query.context);
 
   if (!session || !user) {
     return res.sendStatus(404);
@@ -326,9 +340,10 @@ app.post("/session/:id/vote", (req, res) => {
   res.sendStatus(200);
 });
 
+
 app.post("/session/:id/reveal", (req, res) => {
   const session = sessions[req.params.id];
-  const user = req.session.user;
+  const user = userContexts.get(req.query.context);
 
   if (!session || !user) {
     return res.sendStatus(404);
@@ -343,6 +358,7 @@ app.post("/session/:id/reveal", (req, res) => {
   broadcast(session);
   res.sendStatus(200);
 });
+
 
 // ############################################################################
 
@@ -408,11 +424,20 @@ app.post("/create-session", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
+
+  const sessionId = req.query.sessionId;
+
+  if (sessionId) {
+    req.session.redirectAfterLogin = `/session/${sessionId}?context=${req.query.context}`;
+  }
+
   res.render("main", {
     title: "Join Planning Poker",
     name: "Planning Poker",
     content: "Collaborative planning poker tool for agile teams using Jira.",
     jiraDefaultDomain: process.env.LOGIN_FORM_JIRA_DEFAULT_DOMAIN,
+    contextId: req.query.context || "",
+    sessionId: req.query.sessionId || "",
     css: "/css/mainPage.css",
     error: null,
   });
