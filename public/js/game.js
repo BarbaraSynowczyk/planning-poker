@@ -56,18 +56,6 @@ window.reveal = function () {
     });
 };
 
-document.addEventListener("click", (e) => {
-    const card = e.target.closest(".poker-card");
-    if (!card) return;
-
-    const value = card.innerText.trim();
-    const sessionId = document.getElementById("game-root").dataset.sessionId;
-
-    fetch(`/session/${sessionId}/vote?value=${value}`, {
-        method: "POST"
-    });
-});
-
 document.addEventListener("DOMContentLoaded", () => {
     setInterval(() => {
         animateChart();
